@@ -24,7 +24,7 @@ def main():
     )
     check(
         "fair-opportunity-database-of-record-sentence-present",
-        "shall not market, quote, or otherwise offer for sale any IT Solutions not listed under this contract until those items are included in the SEWP database of record" in html,
+        "shall not market, quote or otherwise offer for sale, any IT Solutions not listed under this contract, until the said solutions are included in the SEWP database of record" in html,
         failures,
     )
     check(
