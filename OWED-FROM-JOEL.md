@@ -33,10 +33,10 @@ are the pieces still missing, so Robert can ask Joel for them in one pass.
   otherwise.
 - The installation, warranty, and technical-support POLICY text (not just
   the contact names already listed above) that SOW A.5.1(3b) requires every
-  contract holder to post — the procedures agencies should expect, not only
+  contract holder to post: the procedures agencies should expect, not only
   who to call.
 - The "Why 16 Cyber" claim/content from your sample page, if you want it on
-  the site — it isn't on this round's page because it wasn't confirmed.
+  the site. It isn't on this round's page because it wasn't confirmed.
 - The capability statement document itself (the file your sample page's
   "Request capability statement" button points to), so it can be linked or
   attached once you send it.

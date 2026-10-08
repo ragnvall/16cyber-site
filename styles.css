@@ -2,7 +2,7 @@
    Royal blue (#0033CC) carries text and structure.
    Orange (#FF6600) is a rule/accent color only — never text, to keep contrast at AA. */
 
-/* Self-hosted Barlow (OFL license), latin subset only — no third-party font call. */
+/* Self-hosted Barlow (OFL license), latin subset only. No third-party font call. */
 @font-face {
   font-family: 'Barlow';
   font-style: normal;
