@@ -2,6 +2,39 @@
    Royal blue (#0033CC) carries text and structure.
    Orange (#FF6600) is a rule/accent color only — never text, to keep contrast at AA. */
 
+/* Self-hosted Barlow (OFL license), latin subset only — no third-party font call. */
+@font-face {
+  font-family: 'Barlow';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('assets/fonts/barlow-400.woff2') format('woff2');
+}
+
+@font-face {
+  font-family: 'Barlow';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url('assets/fonts/barlow-500.woff2') format('woff2');
+}
+
+@font-face {
+  font-family: 'Barlow';
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url('assets/fonts/barlow-600.woff2') format('woff2');
+}
+
+@font-face {
+  font-family: 'Barlow';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url('assets/fonts/barlow-700.woff2') format('woff2');
+}
+
 :root {
   --blue: #0033CC;
   --blue-dark: #00227a;
@@ -104,8 +137,12 @@ a:hover {
 
 /* ===== Header ===== */
 header.site-header {
-  padding: 36px 0 28px;
   border-bottom: 1px solid var(--line);
+}
+
+.brand-row {
+  padding-top: 36px;
+  padding-bottom: 28px;
 }
 
 .logo-mark {

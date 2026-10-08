@@ -25,6 +25,21 @@ are the pieces still missing, so Robert can ask Joel for them in one pass.
   order troubleshooting questions.
 - 16 Cyber's SEWP VI Contract Holder detail page URL (the public listing
   on sewp.nasa.gov), once posted.
+- Confirm the contract is active and orderable right now, or give the start
+  date if it isn't yet. NASA's own example document shows a sample SEWP VI
+  period of performance of November 2026 to October 2036, which is in the
+  future as of today (10-07); the site currently says "Active contract
+  holder" per your sample page, and that wording stays unless you tell us
+  otherwise.
+- The installation, warranty, and technical-support POLICY text (not just
+  the contact names already listed above) that SOW A.5.1(3b) requires every
+  contract holder to post — the procedures agencies should expect, not only
+  who to call.
+- The "Why 16 Cyber" claim/content from your sample page, if you want it on
+  the site — it isn't on this round's page because it wasn't confirmed.
+- The capability statement document itself (the file your sample page's
+  "Request capability statement" button points to), so it can be linked or
+  attached once you send it.
 
 ## Content that needs Joel's sign-off before it goes up
 His sample page (`16Cyber.html`) lists a capabilities grid (cybersecurity,
