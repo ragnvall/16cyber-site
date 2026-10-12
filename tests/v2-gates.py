@@ -212,6 +212,17 @@ def main():
     header = find(root, lambda n: n.tag == "header")
     top_text = "".join(n.all_text() for n in header + hero)
     check("email-in-header-area", EMAIL in top_text, failures)
+    # Owner change 6 (10-12): the ordering guide appears once, not in the hero;
+    # it stays on the contract facts card and in the footer.
+    hero_vars = [n.attrs.get("data-var") for h in hero for n in h.walk() if "data-var" in n.attrs]
+    check("no-ordering-guide-in-hero", "ordering_guide_pdf" not in hero_vars
+          and "ordering guide" not in " ".join(h.all_text() for h in hero).lower(), failures)
+    check("no-button-in-hero", not [n for h in hero for n in h.walk()
+                                    if "btn" in n.attrs.get("class", "").split() or n.tag == "button"], failures)
+    og_places = {("facts" if n.has_ancestor(lambda p: "facts" in p.attrs.get("class", "").split()) else
+                  "footer" if n.has_ancestor(lambda p: p.tag == "footer") else "other")
+                 for n in vars_ if n.attrs["data-var"] == "ordering_guide_pdf"}
+    check("ordering-guide-only-on-card-and-footer (%s)" % sorted(og_places), og_places == {"facts", "footer"}, failures)
     quote = find(root, lambda n: n.attrs.get("id") == "quote")
     quote_live = "".join(text_outside_vars(n) for n in quote) + "".join(
         n.all_text() for q in quote for n in q.walk() if n.attrs.get("data-var") in ALWAYS_ON)

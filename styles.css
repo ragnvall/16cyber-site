@@ -246,11 +246,6 @@ main section[id] {
   border-color: var(--blue-dark);
 }
 
-.btn-ghost {
-  background: #fff;
-  color: var(--blue);
-}
-
 .btn-sm {
   padding: 9px 16px;
   font-size: 15px;
@@ -282,13 +277,6 @@ main section[id] {
 
 .intro {
   max-width: 700px;
-}
-
-.ctas {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 12px;
-  align-items: center;
 }
 
 /* ===== Screen 1: home, top of page ===== */
@@ -339,7 +327,7 @@ main section[id] {
 
 .or {
   font-size: 16px;
-  margin: 14px 0 0;
+  margin: 0;
 }
 
 .note {
@@ -818,15 +806,6 @@ footer.site-footer {
 
   .id-tile dd {
     font-size: 19px;
-  }
-
-  .ctas {
-    flex-direction: column;
-    align-items: stretch;
-  }
-
-  .ctas .btn {
-    justify-content: center;
   }
 
   .sec {
