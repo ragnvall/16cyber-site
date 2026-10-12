@@ -325,8 +325,7 @@ def main():
         check("success-line-not-built", "Sent. We reply within" not in html, failures)
 
     # 12. Fixed facts and copy.
-    for fact in ("NASA SEWP VI Category A contract holder",
-                 "16 Cyber is a NASA SEWP VI contract holder.",
+    for fact in ("16 Cyber is a NASA SEWP VI contract holder.",
                  "We supply IT, cloud and cybersecurity products to federal agencies.",
                  "9W5N7", "MZPNX5XEM9N5",
                  "Ordering on SEWP VI opens November 1, 2026.",
@@ -334,7 +333,14 @@ def main():
                  "This site is built to meet Section 508 / WCAG 2.1 AA."):
         check("fact-on-live: " + fact[:40], fact in " ".join(text_outside_vars(root).split()), failures)
     strip = find(root, lambda n: "id-strip" in n.attrs.get("class", "").split())
-    check("strip-one-line", strip and " ".join(strip[0].all_text().split()) == "NASA SEWP VI Category A contract holder", failures)
+    # Owner change 2 (10-12): the strip keeps its band and orange rule but holds no text,
+    # and the "Category A contract holder" line is gone from the page body.
+    check("strip-present-and-empty", strip and strip[0].has_ancestor(lambda p: p.tag == "header")
+          and not strip[0].all_text().strip(), failures)
+    body_text = " ".join(" ".join(n.all_text() for n in find(root, lambda n: n.tag == "body")).split())
+    check("no-category-a-contract-holder-line",
+          re.search(r"NASA SEWP VI,? Category A contract holder", body_text) is None, failures)
+    check("footer-keeps-sewp-identifier", footer and "NASA SEWP VI, Category A" in text_outside_vars(footer[0]), failures)
 
     # 13. House rules: no em dashes, no brand logos, 1080 column, no external requests.
     base = os.path.dirname(os.path.abspath(index_path))

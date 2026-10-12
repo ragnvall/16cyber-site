@@ -151,17 +151,11 @@ p {
 }
 
 /* ===== Identity strip + header ===== */
+/* The dark-blue band with its orange rule, now without text (owner, 10-12). */
 .id-strip {
+  height: 13px;
   background: var(--blue-dark);
-  color: #fff;
-  font-size: 13.5px;
-  letter-spacing: 0.03em;
   border-bottom: 3px solid var(--orange);
-}
-
-.id-strip .wrap {
-  padding-top: 8px;
-  padding-bottom: 8px;
 }
 
 header.site-header {
@@ -741,11 +735,6 @@ footer.site-footer {
 @media (max-width: 600px) {
   :root {
     --gutter: 16px;
-  }
-
-  .id-strip .wrap {
-    text-align: center;
-    font-size: 12.5px;
   }
 
   .head-row {
