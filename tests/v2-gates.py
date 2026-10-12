@@ -126,6 +126,22 @@ def css_color_decls(css):
                 yield prop.strip().lower(), val.strip()
 
 
+def script_problems(src):
+    """The page may carry exactly one script (owner amendment 10-12): inline,
+    no src, no network calls, under 40 lines."""
+    scripts = re.findall(r"<script\b([^>]*)>(.*?)</script>", src, re.S | re.I)
+    if len(scripts) != 1 or len(re.findall(r"<script\b", src, re.I)) != 1:
+        return "expected exactly one <script>, found %d" % len(re.findall(r"<script\b", src, re.I))
+    attrs, body = scripts[0]
+    if re.search(r"\bsrc\s*=", attrs, re.I):
+        return "script has a src"
+    if re.search(r"\bfetch\s*\(|XMLHttpRequest|\bimport\b|sendBeacon|WebSocket|EventSource", body):
+        return "script makes a network call"
+    if len(body.strip().splitlines()) >= 40:
+        return "script is 40 lines or more"
+    return ""
+
+
 def main():
     index_path, preview_path = sys.argv[1], sys.argv[2]
     css_path = os.path.join(os.path.dirname(os.path.abspath(index_path)), "styles.css")
@@ -184,7 +200,8 @@ def main():
         icons = [n.attrs.get("href", "") for n in find(proot, lambda n: n.tag == "link" and "icon" in n.attrs.get("rel", ""))]
         check("preview-favicons-inlined", icons and all(h.startswith("data:") for h in icons), failures)
         check("preview-under-1.5MB", len(preview.encode("utf-8")) < 1.5 * 1024 * 1024, failures)
-        check("preview-no-script", "<script" not in preview.lower(), failures)
+        prob = script_problems(preview)
+        check("preview-one-small-inline-script (%s)" % prob, not prob, failures)
         # Purple is a preview-only colour.
         check("purple-only-in-preview", not any(s in (html + css).upper() for s in ("#EFE7FF", "#3B1D8F", "#C9B8F5")), failures)
 
@@ -243,7 +260,12 @@ def main():
     check("no-heading-level-skips", levels[:1] == [1] and not skips, failures)
 
     # 9. No JavaScript, no event handlers.
-    check("no-script-tag", "<script" not in html.lower(), failures)
+    prob = script_problems(html)
+    check("one-small-inline-script (%s)" % prob, not prob, failures)
+    quote_btns = [n for n in root.walk() if " ".join(n.all_text().split()) == "Get a quote"
+                  and not any(" ".join(c.all_text().split()) == "Get a quote" for c in n.children)]
+    check("exactly-one-get-a-quote (%d)" % len(quote_btns), len(quote_btns) == 1
+          and quote_btns[0].has_ancestor(lambda p: p.tag == "header"), failures)
     check("no-on-handlers", not any(k.startswith("on") for n in root.walk() for k in n.attrs), failures)
     check("no-javascript-urls", "javascript:" not in html.lower(), failures)
 

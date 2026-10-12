@@ -45,7 +45,6 @@
         <div class="id-tile"><dt>UEI</dt><dd>MZPNX5XEM9N5</dd></div>
       </dl>
       <div class="ctas">
-        <a class="btn" href="#quote">Get a quote</a>
         <span class="btn btn-ghost" data-var="ordering_guide_pdf" hidden><svg width="17" height="17" viewBox="0 0 16 16" aria-hidden="true" focusable="false"><path d="M8 2v8m0 0L4.5 6.5M8 10l3.5-3.5M3 13.5h10" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>[Ordering guide PDF]</span>
       </div>
       <p class="or">Or email us directly: <strong class="email">sewp@16cyber.com</strong></p>
@@ -81,7 +80,6 @@
         <p>Orders over $15,000 go to every Category A holder through NASA's tool, so each one gets a fair chance to bid. We can quote only items already in SEWP's product database.</p>
         <p class="clause">Contract clause A.1.13: &ldquo;Contractors will be provided a fair opportunity at the individual order level as appropriate per FAR Part 16.505(b), including the SEWP RFQ tools.&rdquo; The same clause requires that 16 Cyber &ldquo;shall not market, quote or otherwise offer for sale, any IT Solutions not listed under this contract, until the said solutions are included in the SEWP database of record, and available to all Government end-users.&rdquo;</p>
       </div>
-      <div class="ctas"><a class="btn" href="#quote">Get a quote</a></div>
     </div>
   </section>
 
@@ -173,7 +171,7 @@
 
   <section class="sec sec-center" id="quote" aria-labelledby="quote-heading">
     <div class="wrap">
-      <span class="eyebrow">Get a quote</span>
+      <span class="eyebrow" aria-hidden="true">Request a quote</span>
       <h2 id="quote-heading">Request a quote</h2>
       <div class="quote-card">
         <p class="quote-sub">For a ballpark quote. Your contracting officer places the official order through NASA's SEWP Quote Request Tool.</p>
@@ -262,6 +260,34 @@
     </div>
   </div>
 </footer>
+
+<script>
+/* The one script on the page (owner, 10-12): the header slides away while
+   scrolling down and comes back on any scroll up. Without it, the header just
+   stays at the top. */
+(function () {
+  var header = document.querySelector('.site-header');
+  if (!header || !window.requestAnimationFrame) return;
+  var lastY = window.scrollY;
+  var ticking = false;
+  function update() {
+    var y = window.scrollY;
+    if (y <= header.offsetHeight || y < lastY) {
+      header.classList.remove('header--hidden');
+    } else if (y > lastY) {
+      header.classList.add('header--hidden');
+    }
+    lastY = y;
+    ticking = false;
+  }
+  window.addEventListener('scroll', function () {
+    if (!ticking) {
+      ticking = true;
+      window.requestAnimationFrame(update);
+    }
+  }, { passive: true });
+})();
+</script>
 
 </body>
 </html>
