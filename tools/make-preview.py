@@ -58,8 +58,9 @@ MIME = {".woff2": "font/woff2", ".png": "image/png", ".ico": "image/x-icon",
 
 
 def data_uri(rel_path):
-    path = os.path.normpath(os.path.join(ROOT, rel_path))
-    if not path.startswith(ROOT + os.sep) or not os.path.isfile(path):
+    root = os.path.realpath(ROOT)
+    path = os.path.realpath(os.path.join(ROOT, rel_path))
+    if not path.startswith(root + os.sep) or not os.path.isfile(path):
         sys.exit("make-preview: missing local file %r" % rel_path)
     ext = os.path.splitext(path)[1].lower()
     mime = MIME.get(ext) or mimetypes.guess_type(path)[0] or "application/octet-stream"

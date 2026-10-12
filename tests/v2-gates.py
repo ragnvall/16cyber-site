@@ -264,6 +264,16 @@ def main():
         check("five-real-fields", len(real) == 5, failures)
         unlabeled = [n.attrs.get("name") for n in real if n.attrs.get("id") not in labels]
         check("every-field-has-visible-label (%s)" % unlabeled, not unlabeled, failures)
+        hp_ids = {n.attrs.get("id") for n in hp}
+
+        def concealed(n):
+            cls = set(n.attrs.get("class", "").split())
+            return ("hidden" in n.attrs or n.attrs.get("aria-hidden") == "true"
+                    or cls & {"hp", "sr-only", "visually-hidden"}
+                    or re.search(r"display\s*:\s*none|visibility\s*:\s*hidden", n.attrs.get("style", "")))
+        unseen = [n.attrs.get("for") for n in f.walk() if n.tag == "label" and n.attrs.get("for") not in hp_ids
+                  and (concealed(n) or n.has_ancestor(concealed))]
+        check("every-label-visible-except-honeypot (%s)" % unseen, not unseen, failures)
         need = " ".join(n.all_text().strip() for n in f.walk() if n.tag == "label")
         for lab in ("Name", "Agency or company", "Work email", "Phone", "What you need, how many, and by when"):
             check("label-" + lab, lab in need, failures)
@@ -284,8 +294,12 @@ def main():
 
     # 13. House rules: no em dashes, no brand logos, 1080 column, no external requests.
     base = os.path.dirname(os.path.abspath(index_path))
-    docs = [(n, open(os.path.join(base, n), encoding="utf-8").read())
-            for n in ("README.md", "OWED-FROM-JOEL.md") if os.path.isfile(os.path.join(base, n))]
+    docs = []
+    for n in ("README.md", "OWED-FROM-JOEL.md"):
+        doc_path = os.path.join(base, n)
+        check("doc-present-" + n, os.path.isfile(doc_path), failures)
+        if os.path.isfile(doc_path):
+            docs.append((n, open(doc_path, encoding="utf-8").read()))
     for label, src in [("index", html), ("css", css), ("preview", preview)] + docs:
         check("no-em-dash-in-" + label, "\u2014" not in src and "&mdash;" not in src, failures)
     imgs = [n.attrs.get("src", "") for n in root.walk() if n.tag == "img"]
