@@ -267,7 +267,18 @@ def main():
         hp_ids = {n.attrs.get("id") for n in hp}
 
         def decls(style):
-            return {k: v.lower() for k, v in css_color_decls("{" + style + "}")}
+            """Effective value per property: !important beats any later plain value,
+            the last !important wins among important ones, else the last wins."""
+            out, important = {}, set()
+            for k, v in css_color_decls("{" + style + "}"):
+                v = v.lower()
+                imp = re.search(r"!\s*important\s*$", v) is not None
+                v = re.sub(r"\s*!\s*important\s*$", "", v).strip()
+                if imp or k not in important:
+                    out[k] = v
+                    if imp:
+                        important.add(k)
+            return out
 
         def hides(d, allow_sr_only=False):
             if re.match(r"none\b", d.get("display", "")) or re.match(r"hidden\b", d.get("visibility", "")):
