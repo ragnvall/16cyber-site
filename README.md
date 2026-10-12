@@ -6,6 +6,24 @@ Plan: `~/company-two/plans/PLAN-16cyber-001-site.md`
 
 Still missing before the page says more: see `OWED-FROM-JOEL.md`.
 
+## Variables and the preview
+
+A fact that is not in writing yet sits in `index.html` as an element with
+`data-var="<id>"` and the `hidden` attribute, holding its [bracketed label],
+for example `<dd data-var="contract_number" hidden>[Contract number]</dd>`.
+The live page leaves every such element out. To fill one, put the real value
+in place of the label and delete `hidden`. The ids are listed in
+`OWED-FROM-JOEL.md`.
+
+To see the page with every variable shown as a purple chip:
+
+    python3 tools/make-preview.py
+
+It writes one self-contained file, `dist-preview/16cyber-site-preview-v2-<date>.html`
+(CSS, fonts and images inlined, no JavaScript), and copies it into the design
+book folder when that folder exists. `dist-preview/` is not committed.
+Check both with `python3 tests/v2-gates.py index.html <preview file>`.
+
 ## Going live
 
 This repo is private today. Going live is two steps, both Robert's to take
