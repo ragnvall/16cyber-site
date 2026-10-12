@@ -519,6 +519,20 @@ header.site-header {
   margin-top: 24px;
 }
 
+/* Owner change 4 (10-12): from tablet width up, the quote block is one
+   centered unit. Phones keep the full-width, left-aligned layout. */
+@media (min-width: 601px) {
+  .sec-center .wrap {
+    text-align: center;
+  }
+
+  .sec-center .quote-card {
+    margin-left: auto;
+    margin-right: auto;
+    text-align: left;
+  }
+}
+
 .quote-sub {
   font-size: 15px;
   line-height: 1.45;
