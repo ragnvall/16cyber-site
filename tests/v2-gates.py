@@ -219,7 +219,11 @@ def main():
     h1s = find(root, lambda n: n.tag == "h1")
     check("exactly-one-h1", len(h1s) == 1, failures)
     sections = find(root, lambda n: n.tag == "section")
-    check("at-least-six-sections", len(sections) >= 6, failures)
+    # Book screens 1, 2, 3, 4 and 6 in the drawn order. Screen 5 (Contact) was
+    # removed by the owner on 10-12: the footer already carries the contacts.
+    check("sections-in-order (%s)" % [s.attrs.get("id") for s in sections],
+          [s.attrs.get("id") for s in sections] == ["top", "how-to-buy", "contract-facts", "what-we-supply", "quote"],
+          failures)
     for s in sections:
         h2 = [n for n in s.walk() if n.tag == "h2"]
         h1 = [n for n in s.walk() if n.tag == "h1"]
@@ -240,11 +244,12 @@ def main():
     anchors = [n.attrs["href"][1:] for n in root.walk() if n.tag == "a" and n.attrs.get("href", "").startswith("#")]
     dangling = sorted({a for a in anchors if a not in ids_on_page})
     check("anchors-resolve (%s)" % ", ".join(dangling), not dangling, failures)
-    for target in ("how-to-buy", "contract-facts", "what-we-supply", "contact", "quote"):
+    for target in ("how-to-buy", "contract-facts", "what-we-supply", "quote"):
         check("nav-target-" + target, target in anchors and target in ids_on_page, failures)
     nav = find(root, lambda n: n.tag == "nav")
-    check("nav-four-links", nav and [n.attrs.get("href") for n in nav[0].walk() if n.tag == "a"]
-          == ["#how-to-buy", "#contract-facts", "#what-we-supply", "#contact"], failures)
+    check("nav-three-links", nav and [n.attrs.get("href") for n in nav[0].walk() if n.tag == "a"]
+          == ["#how-to-buy", "#contract-facts", "#what-we-supply"], failures)
+    check("no-contact-section", "contact" not in ids_on_page, failures)
     hdr_quote = [n for h in header for n in h.walk() if n.tag == "a" and n.attrs.get("href") == "#quote"
                  and not n.has_ancestor(lambda p: p.tag == "nav")]
     check("header-get-a-quote-outside-nav", bool(hdr_quote), failures)

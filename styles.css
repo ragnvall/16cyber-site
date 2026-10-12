@@ -258,10 +258,6 @@ header.site-header {
   border-bottom: 1px solid var(--line);
 }
 
-.sec-line {
-  border-top: 1px solid var(--line);
-}
-
 .intro {
   max-width: 700px;
 }
@@ -620,46 +616,6 @@ header.site-header {
   color: var(--ink);
 }
 
-/* ===== Screen 5: contact ===== */
-.ctiles {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 16px;
-  margin: 24px 0;
-}
-
-.ctile {
-  border: 1px solid var(--line);
-  border-top: 3px solid var(--orange);
-  border-radius: 0 0 8px 8px;
-  padding: 20px 22px;
-  background: #fff;
-}
-
-.ctile-lab {
-  display: block;
-  margin-bottom: 4px;
-  font-weight: 600;
-  font-size: 13.5px;
-  letter-spacing: 0.03em;
-  text-transform: uppercase;
-  color: var(--blue);
-}
-
-.ctile p {
-  margin: 8px 0 0;
-  font-size: 15.5px;
-}
-
-.ctile .big {
-  margin: 0;
-  font-size: 26px;
-  font-weight: 600;
-  line-height: 1.3;
-  color: var(--ink);
-  overflow-wrap: anywhere;
-}
-
 /* ===== Screen 10: footer ===== */
 footer.site-footer {
   background: var(--blue-dark);
@@ -877,15 +833,6 @@ footer.site-footer {
   .field-row {
     grid-template-columns: minmax(0, 1fr);
     gap: 0;
-  }
-
-  .ctiles {
-    grid-template-columns: minmax(0, 1fr);
-    gap: 12px;
-  }
-
-  .ctile .big {
-    font-size: 22px;
   }
 
   footer.site-footer {
