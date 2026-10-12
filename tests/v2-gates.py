@@ -287,6 +287,17 @@ def main():
     check("anchors-resolve (%s)" % ", ".join(dangling), not dangling, failures)
     for target in ("how-to-buy", "contract-facts", "what-we-supply", "quote"):
         check("nav-target-" + target, target in anchors and target in ids_on_page, failures)
+    # Every in-page jump target clears the sticky header (skip link included).
+    margin_sels = set()
+    for sel_group, block in re.findall(r"([^{}]+)\{([^{}]*)\}", re.sub(r"/\*.*?\*/", "", css, flags=re.S)):
+        if re.search(r"scroll-margin-top\s*:\s*var\(--header-h\)", block):
+            margin_sels |= {" ".join(x.split()) for x in sel_group.split(",")}
+    covered = lambda n: ("#" + n.attrs["id"]) in margin_sels or (
+        "main section[id]" in margin_sels and n.tag == "section" and n.has_ancestor(lambda p: p.tag == "main"))
+    targets = {n.attrs["id"]: n for n in root.walk() if "id" in n.attrs and n.attrs["id"] in set(anchors)}
+    uncovered = sorted(i for i, n in targets.items() if not covered(n))
+    check("jump-targets-clear-header (%s)" % ", ".join(uncovered), not uncovered and "main" in targets, failures)
+    check("header-height-set-per-breakpoint", len(re.findall(r"--header-h\s*:\s*\d+px", css)) >= 3, failures)
     nav = find(root, lambda n: n.tag == "nav")
     check("nav-three-links", nav and [n.attrs.get("href") for n in nav[0].walk() if n.tag == "a"]
           == ["#how-to-buy", "#contract-facts", "#what-we-supply"], failures)

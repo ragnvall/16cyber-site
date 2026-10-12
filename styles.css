@@ -185,7 +185,9 @@ header.site-header:focus-within {
   }
 }
 
-/* Jump targets clear the sticky header's height. */
+/* Jump targets (the skip link's #main and every section) clear the sticky
+   header's height. */
+#main,
 main section[id] {
   scroll-margin-top: var(--header-h);
 }
