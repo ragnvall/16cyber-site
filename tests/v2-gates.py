@@ -23,6 +23,12 @@ BOOK_IDS = [
     "about_us_text", "differentiators",
 ]
 ALWAYS_ON = {"form_endpoint"}
+# Owner change 3 (10-12): these three wait for the capability statement and
+# ordering guide; they stay in OWED-FROM-JOEL.md but leave the home page.
+OFF_HOME = {"small_business_status", "certifications", "surcharge_pct"}
+HOME_IDS = [i for i in BOOK_IDS if i not in OFF_HOME]
+FACT_ROWS = ["Contract number", "Category", "Period of performance", "CAGE code", "UEI",
+             "Program Manager and Deputy", "Ordering guide"]
 EMAIL = "sewp@16cyber.com"
 CLAUSE_1 = ("Contractors will be provided a fair opportunity at the individual order level "
             "as appropriate per FAR Part 16.505(b), including the SEWP RFQ tools.")
@@ -132,9 +138,10 @@ def main():
 
     # 1. Every book variable is in index.html as data-var.
     ids = {n.attrs["data-var"] for n in vars_}
-    missing = [i for i in BOOK_IDS if i not in ids]
-    check("all-27-book-ids-present (missing: %s)" % ", ".join(missing), not missing, failures)
-    unknown = sorted(ids - set(BOOK_IDS) - ALWAYS_ON)
+    check("book-has-27-ids", len(BOOK_IDS) == 27 and len(HOME_IDS) == 24, failures)
+    missing = [i for i in HOME_IDS if i not in ids]
+    check("all-24-home-ids-present (missing: %s)" % ", ".join(missing), not missing, failures)
+    unknown = sorted(ids - set(HOME_IDS) - ALWAYS_ON)
     check("no-unknown-data-var-ids (%s)" % ", ".join(unknown), not unknown, failures)
 
     # 2. Live page: every variable OFF except form_endpoint, which is ON.
@@ -159,7 +166,8 @@ def main():
     else:
         proot = parse(preview)
         pvars = find(proot, lambda n: "data-var" in n.attrs)
-        check("preview-has-all-27-ids", all(i in {n.attrs["data-var"] for n in pvars} for i in BOOK_IDS), failures)
+        check("preview-has-all-24-home-ids", all(i in {n.attrs["data-var"] for n in pvars} for i in HOME_IDS), failures)
+        check("preview-has-no-off-home-ids", not ({n.attrs["data-var"] for n in pvars} & OFF_HOME), failures)
         still = [n.attrs["data-var"] for n in pvars if "hidden" in n.attrs]
         check("preview-no-variable-hidden (%s)" % ", ".join(still), not still, failures)
         check("preview-chip-style", all(s.lower() in preview.lower() for s in ("#EFE7FF", "#3B1D8F", "#C9B8F5")), failures)
@@ -323,6 +331,20 @@ def main():
             check("label-" + lab, lab in need, failures)
         check("one-textarea", len([n for n in real if n.tag == "textarea"]) == 1, failures)
         check("success-line-not-built", "Sent. We reply within" not in html, failures)
+
+    # 11b. Contract facts card: exactly these rows, in this order.
+    facts_dl = find(root, lambda n: n.tag == "dl" and "facts" in n.attrs.get("class", "").split())
+    rows = [" ".join(d.all_text().split()) for dl in facts_dl for d in dl.walk() if d.tag == "dt"]
+    check("fact-rows-exact (%s)" % rows, rows == FACT_ROWS, failures)
+    owed_path = os.path.join(os.path.dirname(os.path.abspath(index_path)), "OWED-FROM-JOEL.md")
+    owed = open(owed_path, encoding="utf-8").read() if os.path.isfile(owed_path) else ""
+    owed_missing = [i for i in BOOK_IDS if "`%s`" % i not in owed]
+    check("owed-lists-all-27 (missing: %s)" % ", ".join(owed_missing), owed and not owed_missing, failures)
+    title = find(root, lambda n: n.tag == "title")
+    check("title-is-16-cyber", title and title[0].all_text().strip() == "16 Cyber", failures)
+    metas = [n.attrs.get("content", "") for n in root.walk() if n.tag == "meta" and n.attrs.get("name") == "description"]
+    check("meta-description", metas == ["16 Cyber supplies IT, cloud and cybersecurity products to federal agencies."], failures)
+    check("no-holder-phrase-in-head", re.search(r"Category A contract holder", " ".join(metas) + (title[0].all_text() if title else "")) is None, failures)
 
     # 12. Fixed facts and copy.
     for fact in ("16 Cyber is a NASA SEWP VI contract holder.",

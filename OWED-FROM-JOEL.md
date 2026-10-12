@@ -53,6 +53,8 @@ variable groups.
 | `about_us_text` | About us text | 8 | One or two sentences | company |
 | `differentiators` | Differentiators | 9 | Three to five short points | company |
 
+`small_business_status`, `certifications` and `surcharge_pct` are not on the home page until the capability statement and ordering guide exist (owner, 10-12); the home page carries the other 24.
+
 Screens 7, 8 and 9 are not built yet. Their variables still sit in
 `index.html` (hidden), in the footer's document links, so `index.html` stays
 the one place every variable lives.
