@@ -266,14 +266,42 @@ def main():
         check("every-field-has-visible-label (%s)" % unlabeled, not unlabeled, failures)
         hp_ids = {n.attrs.get("id") for n in hp}
 
+        def decls(style):
+            return {k: v.lower() for k, v in css_color_decls("{" + style + "}")}
+
+        def hides(d, allow_sr_only=False):
+            if re.match(r"none\b", d.get("display", "")) or re.match(r"hidden\b", d.get("visibility", "")):
+                return True
+            sr_only = d.get("position", "").startswith("absolute") and (
+                "clip" in d or "clip-path" in d or re.match(r"1px\b", d.get("width", "")))
+            return bool(sr_only) and not allow_sr_only
+
         def concealed(n):
             cls = set(n.attrs.get("class", "").split())
             return ("hidden" in n.attrs or n.attrs.get("aria-hidden") == "true"
                     or cls & {"hp", "sr-only", "visually-hidden"}
-                    or re.search(r"display\s*:\s*none|visibility\s*:\s*hidden", n.attrs.get("style", "")))
-        unseen = [n.attrs.get("for") for n in f.walk() if n.tag == "label" and n.attrs.get("for") not in hp_ids
+                    or hides(decls(n.attrs.get("style", ""))))
+        form_labels = [n for n in f.walk() if n.tag == "label"]
+        unseen = [n.attrs.get("for") for n in form_labels if n.attrs.get("for") not in hp_ids
                   and (concealed(n) or n.has_ancestor(concealed))]
         check("every-label-visible-except-honeypot (%s)" % unseen, not unseen, failures)
+        # The stylesheet must not hide a real label either (any rule naming label,
+        # or a real label's id or class). Only the honeypot's own rule may.
+        label_hooks = set()
+        for n in form_labels:
+            if n.attrs.get("for") not in hp_ids:
+                label_hooks |= {"#" + n.attrs["id"].lower()} if n.attrs.get("id") else set()
+                label_hooks |= {"." + c.lower() for c in n.attrs.get("class", "").split()}
+        hp_marks = [h.lower() for h in hp_ids if h] + ["company_website", ".hp"]
+        css_bad = []
+        for sel_group, block in re.findall(r"([^{}]+)\{([^{}]*)\}", re.sub(r"/\*.*?\*/", "", css, flags=re.S)):
+            for sel in sel_group.split(","):
+                sel = " ".join(sel.lower().split())
+                names_label = re.search(r"(^|[\s>+~(])label\b", sel) or any(
+                    re.search(re.escape(h) + r"(?![\w-])", sel) for h in label_hooks)
+                if names_label and not any(m in sel for m in hp_marks) and hides(decls(block)):
+                    css_bad.append(sel)
+        check("css-never-hides-a-real-label (%s)" % "; ".join(css_bad), not css_bad, failures)
         need = " ".join(n.all_text().strip() for n in f.walk() if n.tag == "label")
         for lab in ("Name", "Agency or company", "Work email", "Phone", "What you need, how many, and by when"):
             check("label-" + lab, lab in need, failures)
