@@ -1,6 +1,6 @@
 # 16cyber.com
 
-One-page informational site for 16 Cyber (NASA SEWP VI). Plain HTML and CSS, no build step. The one piece of JavaScript is a short inline script that hides the header while scrolling down and shows it on scroll up (owner amendment, 10-12); without it the header just stays at the top.
+One-page informational site for 16 Cyber (NASA SEWP VI). Plain HTML and CSS, no build step. No JavaScript at all: the page is fully static (owner decision 2026-10-13).
 
 Plan: `~/company-two/plans/PLAN-16cyber-001-site.md`
 
@@ -20,7 +20,7 @@ To see the page with every variable shown as a purple chip:
     python3 tools/make-preview.py
 
 It writes one self-contained file, `dist-preview/16cyber-site-preview-v2-<date>.html`
-(CSS, fonts, images and the page's one inline script included), and copies it into the design
+(CSS, fonts and images included), and copies it into the design
 book folder when that folder exists. `dist-preview/` is not committed.
 Check both with `python3 tests/v2-gates.py index.html <preview file>`.
 
