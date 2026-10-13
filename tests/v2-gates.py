@@ -26,7 +26,10 @@ ALWAYS_ON = set()  # form_endpoint left with the form (static cut, 10-13)
 # Owner change 3 (10-12): these three wait for the capability statement and
 # ordering guide; they stay in OWED-FROM-JOEL.md but leave the home page.
 OFF_HOME = {"small_business_status", "certifications", "surcharge_pct"}
-HOME_IDS = [i for i in BOOK_IDS if i not in OFF_HOME]
+# FILLED (amendment 10-13): a variable whose fact arrived in writing drops data-var and hidden and shows
+# the fact; the id stays in the book as a record. brands_confirmed: Daniel Furth's vendor list, email 10-13.
+FILLED = {"brands_confirmed"}
+HOME_IDS = [i for i in BOOK_IDS if i not in OFF_HOME and i not in FILLED]
 FACT_ROWS = ["Contract number", "Category", "Period of performance", "CAGE code", "UEI",
              "Program Manager and Deputy", "Ordering guide"]
 EMAIL = "sewp@16cyber.com"
@@ -154,25 +157,32 @@ def main():
 
     # 1. Every book variable is in index.html as data-var.
     ids = {n.attrs["data-var"] for n in vars_}
-    check("book-has-21-ids", len(BOOK_IDS) == 21 and len(HOME_IDS) == 18, failures)
+    check("book-has-21-ids", len(BOOK_IDS) == 21 and len(HOME_IDS) == 17, failures)
     # Amendment 10-13 (owner, Daniel Furth's advice): one vendor list, no four product tiles.
     check("no-products-ids (%s)" % ", ".join(sorted(i for i in ids if i.startswith("products_"))),
           not any(i.startswith("products_") for i in ids), failures)
     check("no-area-tiles", not find(root, lambda n: {"areas", "area"} & set(n.attrs.get("class", "").split())), failures)
     supply = find(root, lambda n: n.tag == "section" and n.attrs.get("id") == "what-we-supply")
-    vendors = [n for n in supply[0].walk() if n.attrs.get("data-var") == "brands_confirmed"] if supply else []
+    vendors = [n for n in supply[0].walk() if "brands-block" in n.attrs.get("class", "").split()] if supply else []
     check("one-vendor-list-in-what-we-supply (%d)" % len(vendors), len(vendors) == 1, failures)
     check("vendor-list-heading-is-Vendors",
           bool(vendors) and any(n.tag == "h3" and " ".join(n.all_text().split()) == "Vendors" for n in vendors[0].walk()), failures)
-    check("vendor-list-label-bracketed",
-          bool(vendors) and all(" ".join(n.all_text().split()) == "[Vendors confirmed]"
-                                for n in vendors[0].walk() if n.tag == "li"), failures)
+    # Filled 10-13: the list is a fact now, visible on live, no data-var, no hidden, no bracketed placeholder.
+    check("vendor-list-is-filled-and-visible",
+          bool(vendors) and "data-var" not in vendors[0].attrs and "hidden" not in vendors[0].attrs
+          and not any("data-var" in n.attrs or "hidden" in n.attrs for n in vendors[0].walk()), failures)
+    vendor_names = [" ".join(n.all_text().split()) for n in vendors[0].walk() if n.tag == "li"] if vendors else []
+    check("vendor-list-has-names-no-brackets (%d)" % len(vendor_names),
+          len(vendor_names) >= 1 and all(v and "[" not in v and "]" not in v for v in vendor_names), failures)
+    check("vendor-list-names-unique", len(vendor_names) == len(set(v.lower() for v in vendor_names)), failures)
+    check("vendor-list-no-authorized-claim", "authorized" not in " ".join(text_outside_vars(vendors[0]).split()).lower() if vendors else False, failures)
+    check("no-brands-confirmed-variable-left", "brands_confirmed" not in ids, failures)
     supply_text = " ".join(text_outside_vars(supply[0]).split()).lower() if supply else ""
     check("supply-intro-names-four-areas-in-one-sentence",
           "hardware, software, cloud and cybersecurity products" in supply_text, failures)
     check("supply-no-separate-services-paragraph", "also services that come with a product" not in supply_text, failures)
     missing = [i for i in HOME_IDS if i not in ids]
-    check("all-18-home-ids-present (missing: %s)" % ", ".join(missing), not missing, failures)
+    check("all-17-home-ids-present (missing: %s)" % ", ".join(missing), not missing, failures)
     unknown = sorted(ids - set(HOME_IDS) - ALWAYS_ON)
     check("no-unknown-data-var-ids (%s)" % ", ".join(unknown), not unknown, failures)
 
@@ -196,7 +206,7 @@ def main():
     else:
         proot = parse(preview)
         pvars = find(proot, lambda n: "data-var" in n.attrs)
-        check("preview-has-all-18-home-ids", all(i in {n.attrs["data-var"] for n in pvars} for i in HOME_IDS), failures)
+        check("preview-has-all-17-home-ids", all(i in {n.attrs["data-var"] for n in pvars} for i in HOME_IDS), failures)
         check("preview-has-no-off-home-ids", not ({n.attrs["data-var"] for n in pvars} & OFF_HOME), failures)
         still = [n.attrs["data-var"] for n in pvars if "hidden" in n.attrs]
         check("preview-no-variable-hidden (%s)" % ", ".join(still), not still, failures)

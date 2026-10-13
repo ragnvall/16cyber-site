@@ -441,7 +441,7 @@ main section[id] {
   padding: 8px;
   font-size: 13px;
   line-height: 1.3;
-  border: 1px dashed var(--field);
+  border: 1px solid var(--line);
   border-radius: 8px;
 }
 
