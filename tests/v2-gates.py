@@ -364,10 +364,16 @@ def main():
     check("no-holder-phrase-in-head", re.search(r"Category A contract holder", " ".join(metas) + (title[0].all_text() if title else "")) is None, failures)
 
     # 12. Fixed facts and copy.
-    for fact in ("16 Cyber is a NASA SEWP VI contract holder.",
+    # Owner 10-13: the hero repeats nothing from the contract facts card (no holder line, no eyebrow,
+    # no CAGE/UEI tiles, no ordering-date note); those facts live on the card and in the footer.
+    hero_text = " ".join(" ".join(h.all_text().split()) for h in hero)
+    check("hero-repeats-no-contract-fact", hero and not any(x in hero_text for x in
+          ("contract holder", "Category A", "9W5N7", "MZPNX5XEM9N5", "Ordering on SEWP VI", "Contract number")), failures)
+    check("hero-is-one-sentence-plus-email", hero and "We supply IT, cloud and cybersecurity products to federal agencies." in hero_text
+          and EMAIL in hero_text and "See all contract facts" in hero_text, failures)
+    for fact in (
                  "We supply IT, cloud and cybersecurity products to federal agencies.",
                  "9W5N7", "MZPNX5XEM9N5",
-                 "Ordering on SEWP VI opens November 1, 2026.",
                  "SEWP VI runs November 1, 2026 to October 31, 2036.",
                  "This site is built to meet Section 508 / WCAG 2.1 AA."):
         check("fact-on-live: " + fact[:40], fact in " ".join(text_outside_vars(root).split()), failures)
