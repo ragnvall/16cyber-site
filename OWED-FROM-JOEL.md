@@ -4,7 +4,7 @@ The site only states facts we already have in writing. Every other fact is a
 variable: it sits in `index.html` with `data-var="<id>"` and the `hidden`
 attribute, so the live page leaves it out, and the preview
 (`tools/make-preview.py`) shows it as a purple [bracketed] chip. This is the
-full list, 27 in all, taken from the design book's "All variables" table, so
+full list, 23 in all, taken from the design book's "All variables" table, so
 Robert can ask Joel for them in one pass.
 
 "NASA holder rule" marks the 6 that NASA's SEWP VI holder requirements call
@@ -14,7 +14,7 @@ launch. Screen numbers are the design book's: 1 Home top, 2 How to buy,
 guide, 8 About us page, 9 Capability statement, 10 Footer, D the book's
 variable groups.
 
-## The 27 variables
+## The 23 variables
 
 | id | Variable | Where it appears | Format or example | Required by |
 |---|---|---|---|---|
@@ -37,11 +37,7 @@ variable groups.
 | `certifications` | Certifications | 3, 9 | e.g. SDVOSB, 8(a), HUBZone, or none | company |
 | `jv_member_names` | JV member names (confirm) | 8 | Inode Ink and StorageHawk as registered | company |
 | **Products** | | | | |
-| `products_hardware` | Products sold: Hardware | 4 | Short list; items must be in SEWP's product database | company |
-| `products_software` | Products sold: Software | 4 | Short list; items must be in SEWP's product database | company |
-| `products_cloud` | Products sold: Cloud | 4 | Short list; items must be in SEWP's product database | company |
-| `products_cybersecurity` | Products sold: Cybersecurity | 4 | Short list; items must be in SEWP's product database | company |
-| `brands_confirmed` | Brands confirmed | 4 | Brand names, only after each confirms 16 Cyber to SEWP as an authorized reseller | optional |
+| `brands_confirmed` | Vendors confirmed | 4 | Vendor names in one list, only after 16 Cyber confirms each in writing | optional |
 | `capabilities_a1_a6` | Capabilities A.1 to A.6 (confirm) | 4, 9 | Yes or no on each: cybersecurity, cloud, systems integration, managed IT, hardware and software, training | company |
 | `past_performance` | Past performance | 9 | Real orders only, with customer permission, once they exist | optional |
 | **Documents** | | | | |
@@ -53,13 +49,13 @@ variable groups.
 | `about_us_text` | About us text | 8 | One or two sentences | company |
 | `differentiators` | Differentiators | 9 | Three to five short points | company |
 
-`small_business_status`, `certifications` and `surcharge_pct` are not on the home page until the capability statement and ordering guide exist (owner, 10-12); the home page carries the other 24.
+`small_business_status`, `certifications` and `surcharge_pct` are not on the home page until the capability statement and ordering guide exist (owner, 10-12); the home page carries the other 20.
 
 Screens 7, 8 and 9 are not built yet. Their variables still sit in
 `index.html` (hidden), in the footer's document links, so `index.html` stays
 the one place every variable lives.
 
-One more marker that is not one of the 27: `form_endpoint` sits on the quote
+One more marker that is not one of the 23: `form_endpoint` sits on the quote
 form's note ("This form is not connected yet. Until it is, email
 sewp@16cyber.com."). It is shown on the live page on purpose, and comes down
 once the form has somewhere to deliver.
