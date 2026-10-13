@@ -5,8 +5,8 @@ variable: it sits in `index.html` with `data-var="<id>"` and the `hidden`
 attribute, so the live page leaves it out, and the preview
 (`tools/make-preview.py`) shows it as a purple [bracketed] chip. This is the
 full list, 22 in all, taken from the design book's "All variables" table, so
-Robert can ask Joel for them in one pass. The home page carries 8 of them as
-hidden slots; 3 are filled; the other 11 wait for pages not built yet.
+Robert can ask Joel for them in one pass. The home page carries 4 of them as
+hidden slots; 7 are filled; the other 11 wait for pages not built yet.
 
 "NASA holder rule" marks the ones NASA's SEWP VI holder requirements call
 for; "company" is a fact only 16 Cyber can state; "optional" can stay empty at
@@ -21,17 +21,18 @@ C the capability statement, U the about us page.
 | id | Variable | Where it appears | Format or example | Required by |
 |---|---|---|---|---|
 | **Contract** | | | | |
-| `contract_number` | Contract number | 1, 4, G, C | As printed on the NASA SEWP VI award record | NASA holder rule |
+| `contract_number` | Contract number | 1, 4, G, C | FILLED: 80TECH26D0796 (source: Khai's email 10-13) | done |
 | `award_date` | Award date | Later: G | Month day, year, from the award record | optional |
-| `period_of_performance` | Period of performance | 4, G | Start and end dates of our contract, e.g. November 1, 2026 to October 31, 2036 | NASA holder rule |
+| `period_of_performance` | Period of performance | 4, G | FILLED: November 1, 2026 to October 31, 2036 (source: Khai's email 10-13) | done |
 | `sewp_holder_page` | SEWP contract holder page | 4 | Link to 16 Cyber's page on sewp.nasa.gov, once NASA posts it | optional |
 | **Contacts** | | | | |
 | `pm_name` | Program Manager name | 5 | FILLED: Khai Huynh (source: Joel's email 10-13) | done |
 | `dpm_name` | Deputy PM name | 5 | FILLED: Jessica Hagood (source: Joel's email 10-13) | done |
-| `sewp_phone_number` | SEWP phone number | 5, G, C | (xxx) xxx-xxxx | company |
+| `sewp_phone_number` | SEWP phone number | 5, G, C | FILLED: 888-714-6633, ext. 7397 (SEWP) (source: Khai's email 10-13) | done |
 | **Commercial terms** | | | | |
-| `surcharge_pct` | Surcharge % | 4, G | 0.34% is NASA's published rate; confirm before launch | company |
+| `surcharge_pct` | Surcharge % | 4, G | FILLED: 0.34% (NASA's administrative fee, a percentage of the award amount) (source: Khai's email 10-13) | done |
 | **Company facts** | | | | |
+| | Record only | not printed | Khai 10-13: business size WOSB, NAICS 541519; registered name Inode Ink Corporation; personal addresses khai.huynh@16Cyber.com and jessica.hagood@16Cyber.com confirmed correct (not printed, owner's decision). | owner's decision |
 | `naics_codes` | NAICS codes | Later: C | e.g. 541519 (primary), 423430; must match SAM.gov | company |
 | `office_address` | Office address | Later: U | Street, suite, city, state ZIP (the registered business address) | company |
 | `small_business_status` | Small-business status | Later: C | e.g. Small business, per SBA record | company |
