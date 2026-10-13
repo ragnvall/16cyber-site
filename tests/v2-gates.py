@@ -11,13 +11,12 @@ import re
 import sys
 from html.parser import HTMLParser
 
-# The 27 ids from the design book's "All variables" table.
+# The 23 ids from the design book's "All variables" table (amendment 10-13: the four products_* ids left with the tiles).
 BOOK_IDS = [
     "contract_number", "award_date", "period_of_performance",
     "pm_name", "dpm_name", "sewp_phone_number", "inbox_owner",
     "surcharge_pct", "quote_reply_time",
     "naics_codes", "office_address", "small_business_status", "certifications", "jv_member_names",
-    "products_hardware", "products_software", "products_cloud", "products_cybersecurity",
     "brands_confirmed", "capabilities_a1_a6", "past_performance",
     "ordering_guide_pdf", "guide_version_date", "support_policy_text", "capability_statement_design",
     "about_us_text", "differentiators",
@@ -154,9 +153,25 @@ def main():
 
     # 1. Every book variable is in index.html as data-var.
     ids = {n.attrs["data-var"] for n in vars_}
-    check("book-has-27-ids", len(BOOK_IDS) == 27 and len(HOME_IDS) == 24, failures)
+    check("book-has-23-ids", len(BOOK_IDS) == 23 and len(HOME_IDS) == 20, failures)
+    # Amendment 10-13 (owner, Daniel Furth's advice): one vendor list, no four product tiles.
+    check("no-products-ids (%s)" % ", ".join(sorted(i for i in ids if i.startswith("products_"))),
+          not any(i.startswith("products_") for i in ids), failures)
+    check("no-area-tiles", not find(root, lambda n: {"areas", "area"} & set(n.attrs.get("class", "").split())), failures)
+    supply = find(root, lambda n: n.tag == "section" and n.attrs.get("id") == "what-we-supply")
+    vendors = [n for n in supply[0].walk() if n.attrs.get("data-var") == "brands_confirmed"] if supply else []
+    check("one-vendor-list-in-what-we-supply (%d)" % len(vendors), len(vendors) == 1, failures)
+    check("vendor-list-heading-is-Vendors",
+          bool(vendors) and any(n.tag == "h3" and " ".join(n.all_text().split()) == "Vendors" for n in vendors[0].walk()), failures)
+    check("vendor-list-label-bracketed",
+          bool(vendors) and all(" ".join(n.all_text().split()) == "[Vendors confirmed]"
+                                for n in vendors[0].walk() if n.tag == "li"), failures)
+    supply_text = " ".join(text_outside_vars(supply[0]).split()).lower() if supply else ""
+    check("supply-intro-names-four-areas-in-one-sentence",
+          "hardware, software, cloud and cybersecurity products" in supply_text, failures)
+    check("supply-no-separate-services-paragraph", "also services that come with a product" not in supply_text, failures)
     missing = [i for i in HOME_IDS if i not in ids]
-    check("all-24-home-ids-present (missing: %s)" % ", ".join(missing), not missing, failures)
+    check("all-20-home-ids-present (missing: %s)" % ", ".join(missing), not missing, failures)
     unknown = sorted(ids - set(HOME_IDS) - ALWAYS_ON)
     check("no-unknown-data-var-ids (%s)" % ", ".join(unknown), not unknown, failures)
 
@@ -182,7 +197,7 @@ def main():
     else:
         proot = parse(preview)
         pvars = find(proot, lambda n: "data-var" in n.attrs)
-        check("preview-has-all-24-home-ids", all(i in {n.attrs["data-var"] for n in pvars} for i in HOME_IDS), failures)
+        check("preview-has-all-20-home-ids", all(i in {n.attrs["data-var"] for n in pvars} for i in HOME_IDS), failures)
         check("preview-has-no-off-home-ids", not ({n.attrs["data-var"] for n in pvars} & OFF_HOME), failures)
         still = [n.attrs["data-var"] for n in pvars if "hidden" in n.attrs]
         check("preview-no-variable-hidden (%s)" % ", ".join(still), not still, failures)
