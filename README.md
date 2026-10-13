@@ -6,6 +6,16 @@ Plan: `~/company-two/plans/PLAN-16cyber-001-site.md`
 
 Still missing before the page says more: see `OWED-FROM-JOEL.md`.
 
+## Structure
+
+The page mirrors NASA's example website for SEWP VI contract holders, section
+for section and in NASA's order, in 16 Cyber's look: 1 Top (the holder line
+and the contract number), 2 About SEWP, 3 Fair opportunity (the A.1.13
+clause), 4 How to contact SEWP (NASA's help desk), 5 Contract information,
+6 Contacts (the one place the email appears), 7 Ordering guide, 8 Vendors.
+The footer carries the links to NASA SEWP and the two member companies, the
+contract identifiers and the Section 508 line.
+
 ## Variables and the preview
 
 A fact that is not in writing yet sits in `index.html` as an element with
@@ -22,7 +32,7 @@ To see the page with every variable shown as a purple chip:
 It writes one self-contained file, `dist-preview/16cyber-site-preview-v2-<date>.html`
 (CSS, fonts and images included), and copies it into the design
 book folder when that folder exists. `dist-preview/` is not committed.
-Check both with `python3 tests/v2-gates.py index.html <preview file>`.
+Check both with `python3 tests/v3-gates.py index.html <preview file>`.
 
 ## Going live
 
