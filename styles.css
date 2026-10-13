@@ -469,39 +469,6 @@ main section[id] {
 }
 
 /* ===== Screen 4: what we supply ===== */
-.areas {
-  list-style: none;
-  padding: 0;
-  display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 16px;
-  margin: 26px 0 18px;
-}
-
-.area {
-  border: 1px solid var(--line);
-  border-radius: 8px;
-  padding: 20px;
-  background: #fff;
-}
-
-.area p {
-  font-size: 15.5px;
-  margin: 0 0 10px;
-}
-
-.area p:last-child {
-  margin-bottom: 0;
-}
-
-.area-icon {
-  width: 40px;
-  height: 40px;
-  color: var(--blue);
-  margin-bottom: 12px;
-  display: block;
-}
-
 .brands-block {
   margin-top: 26px;
 }
@@ -754,10 +721,6 @@ footer.site-footer {
     grid-template-columns: minmax(0, 1fr);
   }
 
-  .areas {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-
   .brands {
     grid-template-columns: repeat(3, minmax(0, 1fr));
   }
@@ -826,15 +789,6 @@ footer.site-footer {
     grid-template-columns: minmax(0, 1fr);
     gap: 2px;
     padding: 12px 14px;
-  }
-
-  .areas {
-    grid-template-columns: minmax(0, 1fr);
-    gap: 12px;
-  }
-
-  .area {
-    padding: 16px;
   }
 
   .brands {
