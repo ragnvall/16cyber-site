@@ -110,7 +110,9 @@ def parse(html):
 
 
 def text_outside_vars(node):
-    if "data-var" in node.attrs:
+    """Live text: what a visitor sees. Skips every variable AND every hidden element
+    (Codex r1 on PR #9: a row hidden with a plain hidden attribute must not count as shown)."""
+    if "data-var" in node.attrs or "hidden" in node.attrs:
         return ""
     return "".join(node.text) + "".join(text_outside_vars(c) for c in node.children)
 
