@@ -11,8 +11,8 @@ Still missing before the page says more: see `OWED-FROM-JOEL.md`.
 The page mirrors NASA's example website for SEWP VI contract holders, section
 for section and in NASA's order, in 16 Cyber's look: 1 Top (the holder line
 and the contract number), 2 About SEWP, 3 Fair opportunity (the A.1.13
-clause), 4 How to contact SEWP (NASA's help desk), 5 Contract information,
-6 Contacts (the one place the email appears), 7 Ordering guide, 8 Vendors.
+clause), 4 Contract information, 5 How to contact (16 Cyber first, the one
+place the email appears, then NASA's help desk), 6 Ordering guide, 7 Vendors.
 The footer carries the links to NASA SEWP and the two member companies, the
 contract identifiers and the Section 508 line.
 

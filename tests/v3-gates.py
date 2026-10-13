@@ -43,7 +43,7 @@ BANNER = ("Preview, not the live site. Purple items in [brackets] are the facts 
 ALLOWED_HOSTS = {"sewp.nasa.gov", "www.sewp.nasa.gov", "16cyber.com", "www.16cyber.com",
                  "storagehawk.com", "www.storagehawk.com", "inodeink.com", "www.inodeink.com"}
 FOOTER_LINKS = {"https://www.sewp.nasa.gov/": "NASA SEWP", "https://www.storagehawk.com/": "StorageHawk", "https://inodeink.com/": "INODE Ink"}
-SECTIONS = ["top", "about-sewp", "fair-opportunity", "contact-sewp", "contract-facts", "contacts", "ordering-guide", "vendors"]
+SECTIONS = ["top", "about-sewp", "fair-opportunity", "contract-facts", "contacts", "ordering-guide", "vendors"]  # owner 10-13: one How to contact section
 NAV = ["#contract-facts", "#contacts", "#fair-opportunity", "#vendors"]
 SEWP_HELP = ("help@sewp.nasa.gov", "(301) 286-1478", "7:30")
 VOID = {"area", "base", "br", "col", "embed", "hr", "img", "input", "link", "meta",
@@ -177,6 +177,8 @@ def main():
     check("every-variable-carries-a-bracketed-label (%s)" % ", ".join(unbracketed), not unbracketed, failures)
     check("contract-number-label-verbatim", "[Contract number]" in html, failures)
     check("no-filled-ids-as-variables", not (ids & FILLED), failures)
+    on_cells = [n.attrs["data-var"] for n in vars_ if n.tag in ("dt", "dd")]
+    check("hidden-rows-hide-as-a-unit (variable on a cell: %s)" % ", ".join(on_cells), not on_cells, failures)
 
     # 2. Preview: nothing hidden, chips, banner, fully inlined.
     if not preview:
@@ -229,10 +231,12 @@ def main():
     check("fair-opportunity-clause-present", CLAUSE_1 in fo and CLAUSE_2 in fo, failures)
     check("fair-opportunity-plain-line", "fair chance" in fo.lower() or "fair opportunity" in fo.lower(), failures)
 
-    # 7. How to contact SEWP: NASA's own help desk, as text (no mailto), with the SEWP site linked.
-    cs = stext("contact-sewp")
-    check("contact-sewp-has-nasa-help-desk", all(x in cs for x in SEWP_HELP), failures)
-    check("contact-sewp-links-sewp-site", any(n.tag == "a" and n.attrs.get("href", "").startswith("https://www.sewp.nasa.gov") for n in sec["contact-sewp"].walk()) if "contact-sewp" in sec else False, failures)
+    # 7. How to contact: ONE section (owner 10-13) with 16 Cyber first, then NASA's own help desk as text, SEWP site linked.
+    cs = stext("contacts")
+    check("contacts-heading-is-how-to-contact", any(n.tag == "h2" and " ".join(n.all_text().split()) == "How to contact" for n in sec["contacts"].walk()) if "contacts" in sec else False, failures)
+    check("contacts-two-groups-16cyber-then-nasa", [" ".join(n.all_text().split()) for n in sec["contacts"].walk() if n.tag == "h3"] == ["16 Cyber", "NASA SEWP"] if "contacts" in sec else False, failures)
+    check("contacts-has-nasa-help-desk", all(x in cs for x in SEWP_HELP), failures)
+    check("contacts-links-sewp-site", any(n.tag == "a" and n.attrs.get("href", "").startswith("https://www.sewp.nasa.gov") for n in sec["contacts"].walk()) if "contacts" in sec else False, failures)
 
     # 8. Contract information: exactly NASA's rows plus CAGE, in order; hidden rows hide as a unit.
     facts_dl = find(root, lambda n: n.tag == "dl" and "facts" in n.attrs.get("class", "").split())
@@ -296,8 +300,8 @@ def main():
     check("footer-no-email", EMAIL not in ft, failures)
     # Outbound links live in the footer, in How to contact SEWP, and in the Contract information card (the holder page on sewp.nasa.gov).
     outside = [n for n in root.walk() if n.tag == "a" and n.attrs.get("href", "").startswith("http")
-               and not n.has_ancestor(lambda p: p.tag == "footer" or p.attrs.get("id") in ("contact-sewp", "contract-facts"))]
-    check("outbound-links-only-in-footer-contact-sewp-and-facts (%d)" % len(outside), not outside, failures)
+               and not n.has_ancestor(lambda p: p.tag == "footer" or p.attrs.get("id") in ("contacts", "contract-facts"))]
+    check("outbound-links-only-in-footer-contacts-and-facts (%d)" % len(outside), not outside, failures)
     check("outbound-links-only-to-allowed-hosts", all(re.sub(r"^https?://([^/]+).*$", r"\1", n.attrs["href"]).lower() in ALLOWED_HOSTS
           for n in root.walk() if n.tag == "a" and n.attrs.get("href", "").startswith("http")), failures)
     check("outbound-links-noopener", all(n.attrs.get("rel", "") == "noopener" for n in root.walk()
