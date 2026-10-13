@@ -41,7 +41,9 @@ CLAUSE_2 = ("shall not market, quote or otherwise offer for sale, any IT Solutio
 FORM_NOTE = "This form is not connected yet. Until it is, email sewp@16cyber.com."
 BANNER = ("Preview, not the live site. Purple items in [brackets] are the facts still needed; "
           "the live page leaves them out until they are in writing.")
-ALLOWED_HOSTS = {"sewp.nasa.gov", "www.sewp.nasa.gov", "16cyber.com", "www.16cyber.com"}
+ALLOWED_HOSTS = {"sewp.nasa.gov", "www.sewp.nasa.gov", "16cyber.com", "www.16cyber.com",
+                 "storagehawk.com", "www.storagehawk.com", "inodeink.com", "www.inodeink.com"}  # member companies (NASA A.5.1 item 4, 10-13)
+FOOTER_LINKS = {"https://www.sewp.nasa.gov/": "NASA SEWP", "https://www.storagehawk.com/": "StorageHawk", "https://inodeink.com/": "INODE Ink"}
 VOID = {"area", "base", "br", "col", "embed", "hr", "img", "input", "link", "meta",
         "source", "track", "wbr", "path", "circle", "rect", "line", "polyline", "polygon", "ellipse"}
 ORANGE = re.compile(r"#ff6600\b|#f60\b|var\(--orange\)|rgba?\(\s*255\s*,\s*102\s*,\s*0\b", re.I)
@@ -254,6 +256,16 @@ def main():
           "problem with an order" in howto_text and EMAIL in howto_text, failures)
     footer = find(root, lambda n: n.tag == "footer")
     check("email-in-footer", footer and EMAIL in text_outside_vars(footer[0]), failures)
+    # NASA A.5.1 item 4 (10-13): links to the member companies' home pages and the SEWP home page, in the footer, visible, plain text labels.
+    flinks = {n.attrs.get("href"): " ".join(n.all_text().split()) for f in footer for n in f.walk()
+              if n.tag == "a" and n.attrs.get("href", "").startswith("https://") and "hidden" not in n.attrs
+              and not n.has_ancestor(lambda p: "hidden" in p.attrs)}
+    check("footer-links-to-sewp-and-members (%s)" % sorted(set(FOOTER_LINKS) - set(flinks)),
+          all(h in flinks and flinks[h] == t for h, t in FOOTER_LINKS.items()), failures)
+    check("footer-links-open-safely", all(n.attrs.get("rel", "") == "noopener" for f in footer for n in f.walk()
+          if n.tag == "a" and n.attrs.get("href", "").startswith("https://")), failures)
+    check("no-outside-links-elsewhere", not [n for n in root.walk() if n.tag == "a" and n.attrs.get("href", "").startswith("http")
+          and not n.has_ancestor(lambda p: p.tag == "footer")], failures)
 
     # 5. The 0.34% fee only inside a variable.
     check("no-0.34-outside-variable", "0.34" not in text_outside_vars(root), failures)
