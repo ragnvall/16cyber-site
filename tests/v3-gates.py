@@ -27,7 +27,8 @@ ALWAYS_ON = set()
 # Everything else stays in the book for the future pages (ordering guide, capability statement, about us).
 OFF_HOME = {"award_date", "naics_codes", "office_address", "small_business_status", "certifications", "jv_member_names",
             "capabilities_a1_a6", "past_performance", "capability_statement_design", "about_us_text", "differentiators"}
-FILLED = {"brands_confirmed", "pm_name", "dpm_name"}
+# Khai Huynh's email 10-13 (in writing): contract number, period of performance, surcharge, phone.
+FILLED = {"brands_confirmed", "pm_name", "dpm_name", "contract_number", "period_of_performance", "surcharge_pct", "sewp_phone_number"}
 HOME_IDS = [i for i in BOOK_IDS if i not in OFF_HOME and i not in FILLED]
 FACT_ROWS = ["Contract number", "Category", "Contract type", "Period of performance", "SEWP surcharge",
              "UEI", "CAGE code", "SEWP contract holder page"]
@@ -165,9 +166,9 @@ def main():
     def stext(i): return " ".join(text_outside_vars(sec[i]).split()) if i in sec else ""
 
     # 1. Variables: the book's ids, the home set present and hidden, nothing unknown, bracketed labels.
-    check("book-has-22-ids", len(BOOK_IDS) == 22 and len(HOME_IDS) == 8, failures)
+    check("book-has-22-ids", len(BOOK_IDS) == 22 and len(HOME_IDS) == 4, failures)
     missing = [i for i in HOME_IDS if i not in ids]
-    check("all-8-home-ids-present (missing: %s)" % ", ".join(missing), not missing, failures)
+    check("all-4-home-ids-present (missing: %s)" % ", ".join(missing), not missing, failures)
     unknown = sorted(ids - set(HOME_IDS))
     check("no-unknown-data-var-ids (%s)" % ", ".join(unknown), not unknown, failures)
     shown = [n.attrs["data-var"] for n in vars_ if "hidden" not in n.attrs]
@@ -175,7 +176,6 @@ def main():
     check("css-hidden-attribute-forced", re.search(r"\[hidden\]\s*\{[^}]*display\s*:\s*none\s*!important", css) is not None, failures)
     unbracketed = [n.attrs["data-var"] for n in vars_ if not re.search(r"\[[^\]]+\]", n.all_text())]
     check("every-variable-carries-a-bracketed-label (%s)" % ", ".join(unbracketed), not unbracketed, failures)
-    check("contract-number-label-verbatim", "[Contract number]" in html, failures)
     check("no-filled-ids-as-variables", not (ids & FILLED), failures)
     on_cells = [n.attrs["data-var"] for n in vars_ if n.tag in ("dt", "dd")]
     check("hidden-rows-hide-as-a-unit (variable on a cell: %s)" % ", ".join(on_cells), not on_cells, failures)
@@ -186,7 +186,7 @@ def main():
     else:
         proot = parse(preview)
         pvars = find(proot, lambda n: "data-var" in n.attrs)
-        check("preview-has-all-8-home-ids", all(i in {n.attrs["data-var"] for n in pvars} for i in HOME_IDS), failures)
+        check("preview-has-all-4-home-ids", all(i in {n.attrs["data-var"] for n in pvars} for i in HOME_IDS), failures)
         still = [n.attrs["data-var"] for n in pvars if "hidden" in n.attrs]
         check("preview-no-variable-hidden (%s)" % ", ".join(still), not still, failures)
         check("preview-chip-style", all(s.lower() in preview.lower() for s in ("#EFE7FF", "#3B1D8F", "#C9B8F5")), failures)
@@ -217,14 +217,14 @@ def main():
     # 4. The top: the holder line and the contract number, nothing else (no sentence, no email, no ids).
     top = stext("top")
     check("top-says-holder", "NASA SEWP VI, Category A contract holder" in top, failures)
-    check("top-carries-contract-number-slot", any(n.attrs.get("data-var") == "contract_number" for n in sec["top"].walk()) if "top" in sec else False, failures)
+    check("top-shows-contract-number", "80TECH26D0796" in top, failures)
     check("top-nothing-else", "top" in sec and EMAIL not in top and "9W5N7" not in top and "MZPNX5XEM9N5" not in top
-          and len(top) < 120, failures)
+          and len(top) < 140, failures)
 
     # 5. About SEWP: plain words, no fee number outside a variable, says "soup".
     about = stext("about-sewp")
     check("about-sewp-explains", "SEWP" in about and "soup" in about.lower() and "federal" in about.lower(), failures)
-    check("no-0.34-outside-variable", "0.34" not in page_text, failures)
+    check("0.34-only-in-contract-information", page_text.count("0.34") == 1 and "0.34%" in stext("contract-facts"), failures)
 
     # 6. Fair opportunity: the one plain line and the clause, verbatim (round2/round3 gates pin the wording).
     fo = stext("fair-opportunity")
@@ -245,16 +245,18 @@ def main():
     cf = stext("contract-facts")
     check("facts-category-and-type", "Category A" in cf and "GWAC" in cf, failures)
     check("facts-cage-uei", "9W5N7" in cf and "MZPNX5XEM9N5" in cf, failures)
-    for vid in ("contract_number", "period_of_performance", "surcharge_pct", "sewp_holder_page"):
-        check("facts-slot-" + vid, any(n.attrs.get("data-var") == vid for d in facts_dl for n in d.walk()), failures)
+    check("facts-slot-sewp_holder_page", any(n.attrs.get("data-var") == "sewp_holder_page" for d in facts_dl for n in d.walk()), failures)
+    for fact in ("80TECH26D0796", "November 1, 2026 to October 31, 2036", "0.34%"):
+        check("facts-show-" + fact, fact in cf, failures)
 
     # 9. Contacts: PM and DPM by name (Joel's email 10-13), ONE email on the whole page, the phone slot, the problem-order line.
     ct = stext("contacts")
     check("contacts-pm-dpm-named", "Program Manager" in ct and "Khai Huynh" in ct and "Deputy Program Manager" in ct and "Jessica Hagood" in ct, failures)
     check("contacts-email-here", EMAIL in ct, failures)
     check("email-exactly-once-on-page (%d)" % page_text.count(EMAIL), page_text.count(EMAIL) == 1, failures)
-    check("contacts-phone-slot", any(n.attrs.get("data-var") == "sewp_phone_number" for n in sec["contacts"].walk()) if "contacts" in sec else False, failures)
-    check("contacts-problem-order-line", "problem with an order" in ct.lower(), failures)
+    check("contacts-phone-shown", "888-714-6633" in ct and "7397" in ct, failures)
+    check("contacts-problem-order-line", "problem with an order" in ct.lower() and "same email" in ct.lower(), failures)
+    check("phone-exactly-once-on-page (%d)" % page_text.count("888-714-6633"), page_text.count("888-714-6633") == 1, failures)
     check("no-mailto-anywhere", "mailto:" not in html.lower(), failures)
 
     # 10. Ordering guide: the download slot and the support policy slot, hidden until the files exist.
@@ -315,7 +317,7 @@ def main():
     bad_css = [p + ":" + v for p, v in css_color_decls(css) if p in ("color", "-webkit-text-fill-color") and ORANGE.search(v)]
     check("orange-never-text-color-in-css (%s)" % "; ".join(bad_css), not bad_css, failures)
     check("orange-defined-in-css", ORANGE.search(css) is not None, failures)
-    for fact in ("9W5N7", "MZPNX5XEM9N5", "SEWP VI runs November 1, 2026 to October 31, 2036.",
+    for fact in ("9W5N7", "MZPNX5XEM9N5", "SEWP VI runs November 1, 2026 to October 31, 2036.", "80TECH26D0796",
                  "This site is built to meet Section 508 / WCAG 2.1 AA."):
         check("fact-on-live: " + fact[:40], fact in page_text, failures)
     title = find(root, lambda n: n.tag == "title")
