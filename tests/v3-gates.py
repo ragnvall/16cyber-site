@@ -294,9 +294,12 @@ def main():
     check("footer-identifiers", "NASA SEWP VI, Category A" in ft and "MZPNX5XEM9N5" in ft and "9W5N7" in ft, failures)
     check("footer-508-line", "This site is built to meet Section 508 / WCAG 2.1 AA." in ft, failures)
     check("footer-no-email", EMAIL not in ft, failures)
+    # Outbound links live in the footer, in How to contact SEWP, and in the Contract information card (the holder page on sewp.nasa.gov).
     outside = [n for n in root.walk() if n.tag == "a" and n.attrs.get("href", "").startswith("http")
-               and not n.has_ancestor(lambda p: p.tag == "footer" or p.attrs.get("id") == "contact-sewp")]
-    check("outbound-links-only-in-footer-and-contact-sewp (%d)" % len(outside), not outside, failures)
+               and not n.has_ancestor(lambda p: p.tag == "footer" or p.attrs.get("id") in ("contact-sewp", "contract-facts"))]
+    check("outbound-links-only-in-footer-contact-sewp-and-facts (%d)" % len(outside), not outside, failures)
+    check("outbound-links-only-to-allowed-hosts", all(re.sub(r"^https?://([^/]+).*$", r"\1", n.attrs["href"]).lower() in ALLOWED_HOSTS
+          for n in root.walk() if n.tag == "a" and n.attrs.get("href", "").startswith("http")), failures)
     check("outbound-links-noopener", all(n.attrs.get("rel", "") == "noopener" for n in root.walk()
           if n.tag == "a" and n.attrs.get("href", "").startswith("https://")), failures)
 
