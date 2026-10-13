@@ -2,3 +2,4 @@
 screenshots/
 REPORT-*.md
 .worktrees/
+dist-preview/

@@ -1,6 +1,7 @@
-/* 16cyber.com — v1
+/* 16cyber.com, v2 (design book screens 1 to 6 and 10).
    Royal blue (#0033CC) carries text and structure.
-   Orange (#FF6600) is a rule/accent color only — never text, to keep contrast at AA. */
+   Orange (#FF6600) is for rules, tile top edges and one dot only. Never text:
+   orange text fails the contrast check. */
 
 /* Self-hosted Barlow (OFL license), latin subset only. No third-party font call. */
 @font-face {
@@ -42,28 +43,26 @@
   --ink: #141414;
   --ink-muted: #44494f;
   --line: #d9dde3;
+  --field: #6b7380;
   --paper: #ffffff;
   --paper-tint: #f5f7fb;
-  --max: 920px;
+  --foot-ink: #e9edf7;
+  --foot-muted: #c9d3ee;
+  --max: 1080px;
+  --gutter: 24px;
+  --header-h: 120px;
   --font: 'Barlow', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+}
+
+/* A variable that is not filled yet carries the hidden attribute. This rule
+   makes hidden win over every display rule below, so a hidden row, tile or
+   button can never show on the live page. */
+[hidden] {
+  display: none !important;
 }
 
 * {
   box-sizing: border-box;
-}
-
-html {
-  scroll-behavior: smooth;
-}
-
-@media (prefers-reduced-motion: reduce) {
-  html {
-    scroll-behavior: auto;
-  }
-  * {
-    animation-duration: 0.001ms !important;
-    transition-duration: 0.001ms !important;
-  }
 }
 
 body {
@@ -77,11 +76,13 @@ body {
 
 img {
   max-width: 100%;
+  height: auto;
   display: block;
 }
 
 a {
   color: var(--blue);
+  text-underline-offset: 2px;
 }
 
 a:hover {
@@ -109,62 +110,151 @@ a:hover {
 }
 
 .wrap {
-  max-width: var(--max);
+  max-width: calc(var(--max) + 2 * var(--gutter));
   margin: 0 auto;
-  padding: 0 24px;
+  padding: 0 var(--gutter);
 }
 
-/* ===== Top identity strip ===== */
-.id-strip {
-  background: var(--blue-dark);
-  color: #fff;
-  font-size: 13.5px;
-  letter-spacing: 0.03em;
-  border-bottom: 3px solid var(--orange);
+h1,
+h2,
+h3 {
+  color: var(--ink);
+  font-weight: 700;
 }
 
-.id-strip .wrap {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px 24px;
-  padding: 8px 24px;
-  justify-content: space-between;
+h1 {
+  font-size: clamp(33px, 4.6vw, 52px);
+  line-height: 1.08;
+  margin: 0 0 14px;
 }
 
-.id-strip strong {
+h2 {
+  font-size: clamp(25px, 3vw, 30px);
+  line-height: 1.2;
+  margin: 0 0 12px;
+}
+
+h3 {
+  font-size: 19px;
+  line-height: 1.3;
+  font-weight: 600;
+  margin: 0 0 6px;
+}
+
+p {
+  margin: 0 0 14px;
+  color: var(--ink-muted);
+}
+
+.email {
+  color: var(--ink);
   font-weight: 600;
 }
 
-/* ===== Header ===== */
+/* ===== Identity strip + header ===== */
+/* The dark-blue band with its orange rule, now without text (owner, 10-12). */
+.id-strip {
+  height: 13px;
+  background: var(--blue-dark);
+  border-bottom: 3px solid var(--orange);
+}
+
+/* Sticky header (owner, 10-12). The script adds header--hidden while the
+   visitor scrolls down; without the script the header simply stays put.
+   Keyboard focus inside the header always brings it back. */
 header.site-header {
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  background: var(--paper);
   border-bottom: 1px solid var(--line);
+  transition: transform 0.2s ease;
 }
 
-.brand-row {
-  padding-top: 36px;
-  padding-bottom: 28px;
+header.site-header.header--hidden {
+  transform: translateY(-100%);
 }
 
-.logo-mark {
-  width: 260px;
-  height: auto;
+header.site-header:focus-within {
+  transform: none;
 }
 
-.logo-mark img {
-  width: 100%;
-  height: auto;
+@media (prefers-reduced-motion: reduce) {
+  header.site-header {
+    transition: none;
+  }
+}
+
+/* Jump targets (the skip link's #main and every section) clear the sticky
+   header's height. */
+#main,
+main section[id] {
+  scroll-margin-top: var(--header-h);
+}
+
+.head-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px 24px;
+  padding-top: 22px;
+  padding-bottom: 22px;
+}
+
+.logo {
+  width: 196px;
+  flex: none;
+}
+
+.nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 24px;
+  margin-left: auto;
+  font-size: 16px;
+  font-weight: 500;
+}
+
+.nav a {
+  color: var(--ink);
+  text-decoration: none;
+  padding-bottom: 4px;
+}
+
+.nav a:hover {
+  box-shadow: inset 0 -3px 0 var(--orange);
+}
+
+/* ===== Buttons ===== */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--blue);
+  color: #fff;
+  text-decoration: none;
+  font-family: inherit;
+  font-weight: 600;
+  font-size: 17px;
+  line-height: 1.2;
+  padding: 13px 24px;
+  border-radius: 6px;
+  border: 2px solid var(--blue);
+  cursor: pointer;
+}
+
+.btn:hover {
+  background: var(--blue-dark);
+  border-color: var(--blue-dark);
+}
+
+.btn-sm {
+  padding: 9px 16px;
+  font-size: 15px;
+  flex: none;
 }
 
 /* ===== Section scaffolding ===== */
-main section {
-  padding: 48px 0;
-  border-bottom: 1px solid var(--line);
-}
-
-main section:last-of-type {
-  border-bottom: none;
-}
-
 .eyebrow {
   display: inline-block;
   font-size: 13px;
@@ -177,168 +267,597 @@ main section:last-of-type {
   margin-bottom: 18px;
 }
 
-h1 {
-  font-size: clamp(32px, 5vw, 46px);
-  line-height: 1.12;
-  margin: 0 0 18px;
-  font-weight: 700;
-  color: var(--ink);
+.sec {
+  padding: 56px 0;
 }
 
-h2 {
-  font-size: clamp(24px, 3.4vw, 30px);
-  line-height: 1.2;
-  margin: 0 0 16px;
-  font-weight: 700;
-  color: var(--ink);
-}
-
-h3 {
-  font-size: 18px;
-  margin: 0 0 8px;
-  font-weight: 600;
-  color: var(--ink);
-}
-
-.lede {
-  font-size: 19px;
-  color: var(--ink-muted);
-  max-width: 640px;
-  margin: 0;
-}
-
-p {
-  margin: 0 0 14px;
-  color: var(--ink-muted);
-}
-
-p:last-child {
-  margin-bottom: 0;
-}
-
-/* ===== Award manifest table ===== */
-.manifest {
-  border: 1px solid var(--line);
-  border-radius: 8px;
-  overflow: hidden;
-  margin-top: 28px;
-}
-
-.manifest-row {
-  display: grid;
-  grid-template-columns: 230px 1fr;
-  gap: 8px 24px;
-  padding: 16px 20px;
+.sec-tint {
+  background: var(--paper-tint);
+  border-top: 1px solid var(--line);
   border-bottom: 1px solid var(--line);
 }
 
-.manifest-row:last-child {
-  border-bottom: none;
+.intro {
+  max-width: 700px;
 }
 
-.manifest-row:nth-child(odd) {
+/* ===== Screen 1: home, top of page ===== */
+.hero {
+  background: var(--paper-tint);
+  border-bottom: 1px solid var(--line);
+  padding: 56px 0 50px;
+}
+
+.lede {
+  font-size: 21px;
+  color: var(--ink-muted);
+  margin: 0 0 28px;
+  max-width: 720px;
+}
+
+.ids {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px;
+  margin: 0 0 30px;
+}
+
+.id-tile {
+  background: #fff;
+  border: 1px solid var(--line);
+  border-top: 3px solid var(--orange);
+  border-radius: 0 0 8px 8px;
+  padding: 14px 18px;
+}
+
+.id-tile dt {
+  font-size: 12.5px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--blue);
+  margin-bottom: 4px;
+}
+
+.id-tile dd {
+  margin: 0;
+  font-size: 22px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  color: var(--ink);
+}
+
+.or {
+  font-size: 16px;
+  margin: 0;
+}
+
+.note {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 6px 10px;
+  font-size: 15px;
+  margin: 22px 0 0;
+  padding-top: 16px;
+  border-top: 1px solid var(--line);
+}
+
+.dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--orange);
+  flex: none;
+  align-self: center;
+}
+
+/* ===== Screen 2: how to buy ===== */
+.steps {
+  list-style: none;
+  padding: 0;
+  margin: 26px 0;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 20px;
+}
+
+.steps li {
+  border: 1px solid var(--line);
+  border-top: 3px solid var(--orange);
+  border-radius: 0 0 8px 8px;
+  padding: 22px;
+  background: #fff;
+}
+
+.steps p {
+  font-size: 16px;
+  margin: 0 0 10px;
+}
+
+.steps p:last-child {
+  margin-bottom: 0;
+}
+
+.step-num {
+  display: inline-grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: var(--blue);
+  color: #fff;
+  font-weight: 700;
+  font-size: 19px;
+  margin-bottom: 14px;
+}
+
+.steps .small {
+  font-size: 14.5px;
+}
+
+.callout {
+  border-left: 3px solid var(--orange);
+  background: var(--paper-tint);
+  padding: 16px 20px;
+  margin: 0 0 26px;
+}
+
+.callout h3 {
+  font-size: 16px;
+  margin-bottom: 4px;
+}
+
+.callout p {
+  margin: 0;
+  font-size: 16px;
+}
+
+.callout p + p {
+  margin-top: 8px;
+}
+
+.callout .clause {
+  font-size: 14px;
+}
+
+/* ===== Screen 3: contract facts ===== */
+.facts {
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  overflow: hidden;
+  margin: 24px 0 0;
+}
+
+.fact {
+  display: grid;
+  grid-template-columns: 250px minmax(0, 1fr);
+  gap: 4px 24px;
+  padding: 14px 20px;
+  border-top: 1px solid var(--line);
+}
+
+/* Stripes and the top rule count only the rows that are shown, so the card
+   reads the same whichever variables are still hidden. */
+.fact:nth-child(1 of :not([hidden])) {
+  border-top: none;
+}
+
+.fact:nth-child(odd of :not([hidden])) {
   background: var(--paper-tint);
 }
 
-.manifest-label {
+.fact dt {
   font-weight: 600;
   font-size: 13.5px;
   letter-spacing: 0.03em;
   text-transform: uppercase;
   color: var(--blue);
+  padding-top: 2px;
 }
 
-.manifest-value {
+.fact dd {
+  margin: 0;
   color: var(--ink);
 }
 
-.manifest-value .sub {
+.sub {
   display: block;
   color: var(--ink-muted);
   font-size: 15px;
-  margin-top: 4px;
+  margin-top: 3px;
 }
 
-@media (max-width: 560px) {
-  .manifest-row {
-    grid-template-columns: 1fr;
-    gap: 4px;
+/* ===== Screen 4: what we supply ===== */
+.areas {
+  list-style: none;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 16px;
+  margin: 26px 0 18px;
+}
+
+.area {
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 20px;
+  background: #fff;
+}
+
+.area p {
+  font-size: 15.5px;
+  margin: 0 0 10px;
+}
+
+.area p:last-child {
+  margin-bottom: 0;
+}
+
+.area-icon {
+  width: 40px;
+  height: 40px;
+  color: var(--blue);
+  margin-bottom: 12px;
+  display: block;
+}
+
+.brands-block {
+  margin-top: 26px;
+}
+
+.brands {
+  list-style: none;
+  padding: 0;
+  margin: 14px 0 0;
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.brands li {
+  min-height: 74px;
+  display: grid;
+  place-items: center;
+  text-align: center;
+  padding: 8px;
+  font-size: 13px;
+  line-height: 1.3;
+  border: 1px dashed var(--field);
+  border-radius: 8px;
+}
+
+/* ===== Screen 6: quote form ===== */
+.quote-card {
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  padding: 22px;
+  max-width: 560px;
+  margin-top: 24px;
+}
+
+/* Owner change 4 (10-12): from tablet width up, the quote block is one
+   centered unit. Phones keep the full-width, left-aligned layout. */
+@media (min-width: 601px) {
+  .sec-center .wrap {
+    text-align: center;
+  }
+
+  .sec-center .quote-card {
+    margin-left: auto;
+    margin-right: auto;
+    text-align: left;
   }
 }
 
-/* ===== Fact list ===== */
-.fact-list {
-  list-style: none;
-  margin: 24px 0 0;
-  padding: 0;
+.quote-sub {
+  font-size: 15px;
+  line-height: 1.45;
+  margin: 0 0 16px;
+}
+
+.field-row {
   display: grid;
-  gap: 18px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
 }
 
-.fact-list li {
-  padding-left: 20px;
-  border-left: 3px solid var(--orange);
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  margin: 0 0 12px;
+  min-width: 0;
 }
 
-.fact-list p {
-  margin: 0;
+.field label {
+  font-size: 14px;
+  font-weight: 600;
+  color: #1f2328;
 }
 
-.fact-list strong {
+.opt {
+  font-weight: 400;
+  color: var(--ink-muted);
+}
+
+.field input,
+.field textarea {
+  font: inherit;
+  font-size: 16px;
+  color: var(--ink);
+  background: #fff;
+  border: 1.5px solid var(--field);
+  border-radius: 8px;
+  padding: 8px 10px;
+  width: 100%;
+}
+
+.field input {
+  height: 42px;
+}
+
+.field textarea {
+  min-height: 96px;
+  resize: vertical;
+}
+
+.field input:focus-visible,
+.field textarea:focus-visible {
+  outline-offset: 1px;
+}
+
+/* The honeypot: off screen for people, still in the form for bots. */
+.hp {
+  position: absolute;
+  left: -10000px;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+}
+
+.form-foot {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 14px;
+  margin-top: 4px;
+}
+
+.form-note {
+  font-size: 14.5px;
+  margin: 12px 0 0;
+}
+
+.quote-alt {
+  margin: 16px 0 0;
+  padding-top: 12px;
+  border-top: 1px solid var(--line);
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.quote-alt strong {
   color: var(--ink);
 }
 
-/* ===== Contact card ===== */
-.contact-card {
-  border: 1px solid var(--line);
-  border-radius: 8px;
-  padding: 24px;
-  background: var(--paper-tint);
-  margin-top: 24px;
-  max-width: 480px;
+/* ===== Screen 10: footer ===== */
+footer.site-footer {
+  background: var(--blue-dark);
+  color: var(--foot-ink);
+  border-top: 3px solid var(--orange);
+  padding: 42px 0 26px;
+  font-size: 15px;
+  line-height: 1.6;
 }
 
-.contact-card dl {
-  margin: 0;
+.site-footer p {
+  color: var(--foot-ink);
+  margin: 0 0 8px;
+}
+
+.site-footer :focus-visible {
+  outline-color: #fff;
+}
+
+.fcols {
   display: grid;
-  grid-template-columns: auto 1fr;
-  gap: 10px 16px;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr) minmax(0, 1.1fr);
+  gap: 36px;
+  align-items: start;
 }
 
-.contact-card dt {
-  font-weight: 600;
-  color: var(--blue);
+.flogo {
+  width: 150px;
+  background: #fff;
+  padding: 6px 10px;
+  border-radius: 6px;
+  margin-bottom: 12px;
+}
+
+.flinks,
+.fids {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.flinks {
   font-size: 14px;
-  letter-spacing: 0.02em;
+  color: var(--foot-muted);
+}
+
+.fids li {
+  margin: 0 0 6px;
+}
+
+.fh {
+  color: #fff;
+  font-weight: 600;
+  font-size: 13px;
+  letter-spacing: 0.09em;
   text-transform: uppercase;
 }
 
-.contact-card dd {
+.site-footer .fh {
+  color: #fff;
+  margin-bottom: 2px;
+}
+
+.fico {
+  display: grid;
+  grid-template-columns: 22px minmax(0, 1fr);
+  gap: 12px;
+  align-items: start;
+  margin: 0 0 16px;
+  color: #fff;
+}
+
+.fico svg {
+  margin-top: 3px;
+}
+
+.fico p {
   margin: 0;
-  color: var(--ink);
 }
 
-.contact-note {
-  margin-top: 16px;
-  font-size: 15px;
-}
-
-/* ===== Footer ===== */
-footer.site-footer {
-  background: var(--blue-dark);
-  color: #e9edf7;
-  padding: 32px 0;
-  border-top: 3px solid var(--orange);
-}
-
-footer.site-footer .wrap {
+.fbase {
+  border-top: 1px solid rgba(255, 255, 255, 0.22);
+  margin-top: 28px;
+  padding-top: 16px;
   display: flex;
   flex-wrap: wrap;
   justify-content: space-between;
-  gap: 10px 24px;
-  font-size: 14px;
+  gap: 6px 24px;
+  font-size: 13.5px;
+  color: var(--foot-muted);
 }
 
-footer.site-footer strong {
-  color: #fff;
+/* ===== Narrower screens ===== */
+@media (max-width: 900px) {
+  :root {
+    --header-h: 160px;
+  }
+
+  .nav {
+    order: 3;
+    width: 100%;
+    margin-left: 0;
+  }
+
+  .head-row .btn-sm {
+    margin-left: auto;
+  }
+
+  .steps {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .areas {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .brands {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .fcols {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  }
+}
+
+/* Phone (the book's 375-pixel layout): menu links drop, "Get a quote" stays. */
+@media (max-width: 600px) {
+  :root {
+    --gutter: 16px;
+    --header-h: 90px;
+  }
+
+  .head-row {
+    padding-top: 14px;
+    padding-bottom: 14px;
+  }
+
+  .logo {
+    width: 138px;
+  }
+
+  .nav {
+    display: none;
+  }
+
+  .hero {
+    padding: 30px 0;
+  }
+
+  .lede {
+    font-size: 18px;
+    margin-bottom: 22px;
+  }
+
+  .ids {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 10px;
+    margin-bottom: 22px;
+  }
+
+  .id-tile {
+    padding: 11px 14px;
+  }
+
+  .id-tile dd {
+    font-size: 19px;
+  }
+
+  .sec {
+    padding: 38px 0;
+  }
+
+  .steps {
+    gap: 14px;
+  }
+
+  .steps li {
+    padding: 18px;
+  }
+
+  .fact {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 2px;
+    padding: 12px 14px;
+  }
+
+  .areas {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 12px;
+  }
+
+  .area {
+    padding: 16px;
+  }
+
+  .brands {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+  }
+
+  .quote-card {
+    padding: 16px;
+    border-radius: 12px;
+  }
+
+  .field-row {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 0;
+  }
+
+  footer.site-footer {
+    padding-top: 32px;
+  }
+
+  .fcols {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 22px;
+  }
 }
