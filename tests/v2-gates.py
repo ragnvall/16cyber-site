@@ -11,17 +11,18 @@ import re
 import sys
 from html.parser import HTMLParser
 
-# The 23 ids from the design book's "All variables" table (amendment 10-13: the four products_* ids left with the tiles).
+# The 21 ids from the design book's "All variables" table (amendments 10-13: the four products_* ids left with the
+# tiles; inbox_owner and quote_reply_time left with the quote form when the owner made the page fully static).
 BOOK_IDS = [
     "contract_number", "award_date", "period_of_performance",
-    "pm_name", "dpm_name", "sewp_phone_number", "inbox_owner",
-    "surcharge_pct", "quote_reply_time",
+    "pm_name", "dpm_name", "sewp_phone_number",
+    "surcharge_pct",
     "naics_codes", "office_address", "small_business_status", "certifications", "jv_member_names",
     "brands_confirmed", "capabilities_a1_a6", "past_performance",
     "ordering_guide_pdf", "guide_version_date", "support_policy_text", "capability_statement_design",
     "about_us_text", "differentiators",
 ]
-ALWAYS_ON = {"form_endpoint"}
+ALWAYS_ON = set()  # form_endpoint left with the form (static cut, 10-13)
 # Owner change 3 (10-12): these three wait for the capability statement and
 # ordering guide; they stay in OWED-FROM-JOEL.md but leave the home page.
 OFF_HOME = {"small_business_status", "certifications", "surcharge_pct"}
@@ -153,7 +154,7 @@ def main():
 
     # 1. Every book variable is in index.html as data-var.
     ids = {n.attrs["data-var"] for n in vars_}
-    check("book-has-23-ids", len(BOOK_IDS) == 23 and len(HOME_IDS) == 20, failures)
+    check("book-has-21-ids", len(BOOK_IDS) == 21 and len(HOME_IDS) == 18, failures)
     # Amendment 10-13 (owner, Daniel Furth's advice): one vendor list, no four product tiles.
     check("no-products-ids (%s)" % ", ".join(sorted(i for i in ids if i.startswith("products_"))),
           not any(i.startswith("products_") for i in ids), failures)
@@ -171,17 +172,15 @@ def main():
           "hardware, software, cloud and cybersecurity products" in supply_text, failures)
     check("supply-no-separate-services-paragraph", "also services that come with a product" not in supply_text, failures)
     missing = [i for i in HOME_IDS if i not in ids]
-    check("all-20-home-ids-present (missing: %s)" % ", ".join(missing), not missing, failures)
+    check("all-18-home-ids-present (missing: %s)" % ", ".join(missing), not missing, failures)
     unknown = sorted(ids - set(HOME_IDS) - ALWAYS_ON)
     check("no-unknown-data-var-ids (%s)" % ", ".join(unknown), not unknown, failures)
 
-    # 2. Live page: every variable OFF except form_endpoint, which is ON.
+    # 2. Live page: every variable OFF (static cut 10-13: the form and its always-on note are gone).
     shown = [n.attrs["data-var"] for n in vars_ if n.attrs["data-var"] not in ALWAYS_ON and "hidden" not in n.attrs]
     check("every-variable-hidden-on-live (shown: %s)" % ", ".join(shown), not shown, failures)
-    fe = [n for n in vars_ if n.attrs["data-var"] == "form_endpoint"]
-    check("form-endpoint-note-present-and-visible",
-          fe and all("hidden" not in n.attrs for n in fe)
-          and any(" ".join(n.all_text().split()) == FORM_NOTE for n in fe), failures)
+    check("no-form-endpoint-variable", not [n for n in vars_ if n.attrs["data-var"] == "form_endpoint"], failures)
+    check("no-form-note-text", FORM_NOTE not in html, failures)
     # The hidden attribute must win over any display rule (structural, not per-class).
     check("css-hidden-attribute-forced",
           re.search(r"\[hidden\]\s*\{[^}]*display\s*:\s*none\s*!important", css) is not None, failures)
@@ -197,7 +196,7 @@ def main():
     else:
         proot = parse(preview)
         pvars = find(proot, lambda n: "data-var" in n.attrs)
-        check("preview-has-all-20-home-ids", all(i in {n.attrs["data-var"] for n in pvars} for i in HOME_IDS), failures)
+        check("preview-has-all-18-home-ids", all(i in {n.attrs["data-var"] for n in pvars} for i in HOME_IDS), failures)
         check("preview-has-no-off-home-ids", not ({n.attrs["data-var"] for n in pvars} & OFF_HOME), failures)
         still = [n.attrs["data-var"] for n in pvars if "hidden" in n.attrs]
         check("preview-no-variable-hidden (%s)" % ", ".join(still), not still, failures)
@@ -215,8 +214,7 @@ def main():
         icons = [n.attrs.get("href", "") for n in find(proot, lambda n: n.tag == "link" and "icon" in n.attrs.get("rel", ""))]
         check("preview-favicons-inlined", icons and all(h.startswith("data:") for h in icons), failures)
         check("preview-under-1.5MB", len(preview.encode("utf-8")) < 1.5 * 1024 * 1024, failures)
-        prob = script_problems(preview)
-        check("preview-one-small-inline-script (%s)" % prob, not prob, failures)
+        check("preview-no-script", re.search(r"<script\b", preview, re.I) is None, failures)
         # Purple is a preview-only colour.
         check("purple-only-in-preview", not any(s in (html + css).upper() for s in ("#EFE7FF", "#3B1D8F", "#C9B8F5")), failures)
 
@@ -238,10 +236,12 @@ def main():
                   "footer" if n.has_ancestor(lambda p: p.tag == "footer") else "other")
                  for n in vars_ if n.attrs["data-var"] == "ordering_guide_pdf"}
     check("ordering-guide-only-on-card-and-footer (%s)" % sorted(og_places), og_places == {"facts", "footer"}, failures)
-    quote = find(root, lambda n: n.attrs.get("id") == "quote")
-    quote_live = "".join(text_outside_vars(n) for n in quote) + "".join(
-        n.all_text() for q in quote for n in q.walk() if n.attrs.get("data-var") in ALWAYS_ON)
-    check("email-in-form-area", quote and EMAIL in quote_live, failures)
+    # Static cut (owner via Joel, 10-13): no quote section, no form, nothing interactive.
+    check("no-quote-section", not find(root, lambda n: n.attrs.get("id") == "quote"), failures)
+    howto = find(root, lambda n: n.attrs.get("id") == "how-to-buy")
+    howto_text = " ".join(text_outside_vars(howto[0]).split()).lower() if howto else ""
+    check("problem-order-contact-line-in-how-to-buy",
+          "problem with an order" in howto_text and EMAIL in howto_text, failures)
     footer = find(root, lambda n: n.tag == "footer")
     check("email-in-footer", footer and EMAIL in text_outside_vars(footer[0]), failures)
 
@@ -273,7 +273,7 @@ def main():
     # Book screens 1, 2, 3, 4 and 6 in the drawn order. Screen 5 (Contact) was
     # removed by the owner on 10-12: the footer already carries the contacts.
     check("sections-in-order (%s)" % [s.attrs.get("id") for s in sections],
-          [s.attrs.get("id") for s in sections] == ["top", "how-to-buy", "contract-facts", "what-we-supply", "quote"],
+          [s.attrs.get("id") for s in sections] == ["top", "how-to-buy", "contract-facts", "what-we-supply"],
           failures)
     for s in sections:
         h2 = [n for n in s.walk() if n.tag == "h2"]
@@ -285,13 +285,12 @@ def main():
     skips = [b for a, b in zip(levels, levels[1:]) if b > a + 1]
     check("no-heading-level-skips", levels[:1] == [1] and not skips, failures)
 
-    # 9. No JavaScript, no event handlers.
-    prob = script_problems(html)
-    check("one-small-inline-script (%s)" % prob, not prob, failures)
+    # 9. No JavaScript at all (static cut 10-13 restores plan decision 1), no event handlers.
+    check("no-script-on-page", re.search(r"<script\b", html, re.I) is None, failures)
+    check("no-header-hidden-css", "header--hidden" not in css, failures)
     quote_btns = [n for n in root.walk() if " ".join(n.all_text().split()) == "Get a quote"
                   and not any(" ".join(c.all_text().split()) == "Get a quote" for c in n.children)]
-    check("exactly-one-get-a-quote (%d)" % len(quote_btns), len(quote_btns) == 1
-          and quote_btns[0].has_ancestor(lambda p: p.tag == "header"), failures)
+    check("no-get-a-quote-button (%d)" % len(quote_btns), len(quote_btns) == 0, failures)
     check("no-on-handlers", not any(k.startswith("on") for n in root.walk() for k in n.attrs), failures)
     check("no-javascript-urls", "javascript:" not in html.lower(), failures)
 
@@ -300,7 +299,7 @@ def main():
     anchors = [n.attrs["href"][1:] for n in root.walk() if n.tag == "a" and n.attrs.get("href", "").startswith("#")]
     dangling = sorted({a for a in anchors if a not in ids_on_page})
     check("anchors-resolve (%s)" % ", ".join(dangling), not dangling, failures)
-    for target in ("how-to-buy", "contract-facts", "what-we-supply", "quote"):
+    for target in ("how-to-buy", "contract-facts", "what-we-supply"):
         check("nav-target-" + target, target in anchors and target in ids_on_page, failures)
     # Every in-page jump target clears the sticky header (skip link included).
     margin_sels = set()
@@ -317,79 +316,16 @@ def main():
     check("nav-three-links", nav and [n.attrs.get("href") for n in nav[0].walk() if n.tag == "a"]
           == ["#how-to-buy", "#contract-facts", "#what-we-supply"], failures)
     check("no-contact-section", "contact" not in ids_on_page, failures)
-    hdr_quote = [n for h in header for n in h.walk() if n.tag == "a" and n.attrs.get("href") == "#quote"
-                 and not n.has_ancestor(lambda p: p.tag == "nav")]
-    check("header-get-a-quote-outside-nav", bool(hdr_quote), failures)
+    check("no-quote-link-anywhere", not [n for n in root.walk() if n.tag == "a" and n.attrs.get("href") == "#quote"], failures)
 
-    # 11. The quote form.
+    # 11. No form, no form styling left behind (static cut 10-13).
     forms = find(root, lambda n: n.tag == "form")
-    check("one-form", len(forms) == 1, failures)
-    if forms:
-        f = forms[0]
-        check("form-action-hash-post", f.attrs.get("action") == "#" and f.attrs.get("method", "").lower() == "post", failures)
-        fields = [n for n in f.walk() if n.tag in ("input", "textarea", "select") and n.attrs.get("type") not in ("submit", "hidden")]
-        labels = {n.attrs.get("for") for n in f.walk() if n.tag == "label"}
-        hp = [n for n in fields if n.attrs.get("name") == "company_website"]
-        check("honeypot-present", len(hp) == 1 and hp[0].attrs.get("tabindex") == "-1"
-              and hp[0].has_ancestor(lambda p: p.attrs.get("aria-hidden") == "true"), failures)
-        real = [n for n in fields if n.attrs.get("name") != "company_website"]
-        check("five-real-fields", len(real) == 5, failures)
-        unlabeled = [n.attrs.get("name") for n in real if n.attrs.get("id") not in labels]
-        check("every-field-has-visible-label (%s)" % unlabeled, not unlabeled, failures)
-        hp_ids = {n.attrs.get("id") for n in hp}
-
-        def decls(style):
-            """Effective value per property: !important beats any later plain value,
-            the last !important wins among important ones, else the last wins."""
-            out, important = {}, set()
-            for k, v in css_color_decls("{" + style + "}"):
-                v = v.lower()
-                imp = re.search(r"!\s*important\s*$", v) is not None
-                v = re.sub(r"\s*!\s*important\s*$", "", v).strip()
-                if imp or k not in important:
-                    out[k] = v
-                    if imp:
-                        important.add(k)
-            return out
-
-        def hides(d, allow_sr_only=False):
-            if re.match(r"none\b", d.get("display", "")) or re.match(r"hidden\b", d.get("visibility", "")):
-                return True
-            sr_only = d.get("position", "").startswith("absolute") and (
-                "clip" in d or "clip-path" in d or re.match(r"1px\b", d.get("width", "")))
-            return bool(sr_only) and not allow_sr_only
-
-        def concealed(n):
-            cls = set(n.attrs.get("class", "").split())
-            return ("hidden" in n.attrs or n.attrs.get("aria-hidden") == "true"
-                    or cls & {"hp", "sr-only", "visually-hidden"}
-                    or hides(decls(n.attrs.get("style", ""))))
-        form_labels = [n for n in f.walk() if n.tag == "label"]
-        unseen = [n.attrs.get("for") for n in form_labels if n.attrs.get("for") not in hp_ids
-                  and (concealed(n) or n.has_ancestor(concealed))]
-        check("every-label-visible-except-honeypot (%s)" % unseen, not unseen, failures)
-        # The stylesheet must not hide a real label either (any rule naming label,
-        # or a real label's id or class). Only the honeypot's own rule may.
-        label_hooks = set()
-        for n in form_labels:
-            if n.attrs.get("for") not in hp_ids:
-                label_hooks |= {"#" + n.attrs["id"].lower()} if n.attrs.get("id") else set()
-                label_hooks |= {"." + c.lower() for c in n.attrs.get("class", "").split()}
-        hp_marks = [h.lower() for h in hp_ids if h] + ["company_website", ".hp"]
-        css_bad = []
-        for sel_group, block in re.findall(r"([^{}]+)\{([^{}]*)\}", re.sub(r"/\*.*?\*/", "", css, flags=re.S)):
-            for sel in sel_group.split(","):
-                sel = " ".join(sel.lower().split())
-                names_label = re.search(r"(^|[\s>+~(])label\b", sel) or any(
-                    re.search(re.escape(h) + r"(?![\w-])", sel) for h in label_hooks)
-                if names_label and not any(m in sel for m in hp_marks) and hides(decls(block)):
-                    css_bad.append(sel)
-        check("css-never-hides-a-real-label (%s)" % "; ".join(css_bad), not css_bad, failures)
-        need = " ".join(n.all_text().strip() for n in f.walk() if n.tag == "label")
-        for lab in ("Name", "Agency or company", "Work email", "Phone", "What you need, how many, and by when"):
-            check("label-" + lab, lab in need, failures)
-        check("one-textarea", len([n for n in real if n.tag == "textarea"]) == 1, failures)
-        check("success-line-not-built", "Sent. We reply within" not in html, failures)
+    check("no-form", len(forms) == 0, failures)
+    check("no-form-controls", not find(root, lambda n: n.tag in ("input", "textarea", "select", "button")), failures)
+    dead = [sel for sel in (".quote-card", ".quote-sub", ".field", ".form-foot", ".form-note", ".quote-alt", ".hp")
+            if re.search(re.escape(sel) + r"(?![\w-])", re.sub(r"/\*.*?\*/", "", css, flags=re.S))]
+    check("no-form-css-left (%s)" % ", ".join(dead), not dead, failures)
+    check("success-line-not-built", "Sent. We reply within" not in html, failures)
 
     # 11b. Contract facts card: exactly these rows, in this order.
     facts_dl = find(root, lambda n: n.tag == "dl" and "facts" in n.attrs.get("class", "").split())
