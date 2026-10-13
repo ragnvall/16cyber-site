@@ -35,7 +35,7 @@ variable groups.
 | `certifications` | Certifications | 3, 9 | e.g. SDVOSB, 8(a), HUBZone, or none | company |
 | `jv_member_names` | JV member names (confirm) | 8 | Inode Ink and StorageHawk as registered | company |
 | **Products** | | | | |
-| `brands_confirmed` | Vendors confirmed | 4 | Vendor names in one list, only after 16 Cyber confirms each in writing | optional |
+| `brands_confirmed` | Vendors confirmed | 4 | FILLED 2026-10-13: Daniel Furth's "SEWP Vendor List v1.xlsx" (email 10-13), 63 names, no authorization claim | done |
 | `capabilities_a1_a6` | Capabilities A.1 to A.6 (confirm) | 4, 9 | Yes or no on each: cybersecurity, cloud, systems integration, managed IT, hardware and software, training | company |
 | `past_performance` | Past performance | 9 | Real orders only, with customer permission, once they exist | optional |
 | **Documents** | | | | |
@@ -47,7 +47,7 @@ variable groups.
 | `about_us_text` | About us text | 8 | One or two sentences | company |
 | `differentiators` | Differentiators | 9 | Three to five short points | company |
 
-`small_business_status`, `certifications` and `surcharge_pct` are not on the home page until the capability statement and ordering guide exist (owner, 10-12); the home page carries the other 18.
+`small_business_status`, `certifications` and `surcharge_pct` are not on the home page until the capability statement and ordering guide exist (owner, 10-12); the home page carries the other 17.
 
 Screens 7, 8 and 9 are not built yet. Their variables still sit in
 `index.html` (hidden), in the footer's document links, so `index.html` stays
