@@ -44,8 +44,9 @@ BANNER = ("Preview, not the live site. Purple items in [brackets] are the facts 
 ALLOWED_HOSTS = {"sewp.nasa.gov", "www.sewp.nasa.gov", "16cyber.com", "www.16cyber.com",
                  "storagehawk.com", "www.storagehawk.com", "inodeink.com", "www.inodeink.com"}
 FOOTER_LINKS = {"https://www.sewp.nasa.gov/": "NASA SEWP", "https://www.storagehawk.com/": "StorageHawk", "https://inodeink.com/": "INODE Ink"}
-SECTIONS = ["top", "about-sewp", "fair-opportunity", "contract-facts", "contacts", "ordering-guide", "vendors"]  # owner 10-13: one How to contact section
-NAV = ["#contract-facts", "#contacts", "#fair-opportunity", "#vendors"]
+# AUDIT 2026-10-26: order changed on the owner's word ("fair opportunity ... the last part of the page"); chair ALLOW
+SECTIONS = ["top", "about-sewp", "contract-facts", "contacts", "ordering-guide", "vendors", "fair-opportunity"]  # owner 10-13: one How to contact section
+NAV = ["#contract-facts", "#contacts", "#vendors", "#fair-opportunity"]
 SEWP_HELP = ("help@sewp.nasa.gov", "(301) 286-1478", "7:30")
 VOID = {"area", "base", "br", "col", "embed", "hr", "img", "input", "link", "meta",
         "source", "track", "wbr", "path", "circle", "rect", "line", "polyline", "polygon", "ellipse"}
