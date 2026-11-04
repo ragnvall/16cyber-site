@@ -277,11 +277,10 @@ def main():
           len(pdf_links) >= 1 and all(os.path.isfile(os.path.join(repo_root, n.attrs["href"])) for n in pdf_links)
           and all("PDF" in " ".join(n.all_text().split()) for n in pdf_links), failures)
     check("ordering-guide-pdf-link-typed", all(n.attrs.get("type") == "application/pdf" for n in pdf_links) and bool(pdf_links), failures)
-    # AUDIT 11-04 (owner): the PDF link opens in a new tab. Rule for the whole page: target="_blank" is allowed only with
-    # rel="noopener" and link text that says it opens in a new tab (WCAG: warn before a new window).
+    # AUDIT 11-04 (owner): the PDF link opens in a new tab and its text does not say so (owner's call). Rule for the whole page:
+    # target="_blank" is allowed only with rel="noopener".
     blank = [n for n in root.walk() if n.tag == "a" and n.attrs.get("target") == "_blank"]
-    check("target-blank-only-with-noopener-and-new-tab-text (%d)" % len(blank), all(n.attrs.get("rel", "") == "noopener"
-          and "opens in a new tab" in " ".join(n.all_text().split()) for n in blank)
+    check("target-blank-only-with-noopener (%d)" % len(blank), all(n.attrs.get("rel", "") == "noopener" for n in blank)
           and all(n.attrs.get("target") == "_blank" for n in pdf_links), failures)
     sp = [n for n in (og.walk() if og is not None else []) if n.attrs.get("data-var") == "support_policy_text"]
     check("ordering-guide-support-policy-slot-still-hidden", len(sp) == 1 and "hidden" in sp[0].attrs, failures)
