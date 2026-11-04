@@ -7,6 +7,7 @@ Exits non-zero and prints each failing check if any assertion fails.
 Standard library only.
 """
 import os
+import os
 import re
 import sys
 from html.parser import HTMLParser
@@ -28,7 +29,10 @@ ALWAYS_ON = set()
 OFF_HOME = {"award_date", "naics_codes", "office_address", "small_business_status", "certifications", "jv_member_names",
             "capabilities_a1_a6", "past_performance", "capability_statement_design", "about_us_text", "differentiators"}
 # Khai Huynh's email 10-13 (in writing): contract number, period of performance, surcharge, phone.
-FILLED = {"brands_confirmed", "pm_name", "dpm_name", "contract_number", "period_of_performance", "surcharge_pct", "sewp_phone_number"}
+# AUDIT 11-04: ordering_guide_pdf and guide_version_date are FILLED. Khai Huynh's email 11-04 sent the Ordering Guide PDF
+# (posted at assets/); the PDF prints no version string, so the version date slot is replaced by live "Posted November 4, 2026".
+FILLED = {"brands_confirmed", "pm_name", "dpm_name", "contract_number", "period_of_performance", "surcharge_pct", "sewp_phone_number",
+          "ordering_guide_pdf", "guide_version_date"}
 HOME_IDS = [i for i in BOOK_IDS if i not in OFF_HOME and i not in FILLED]
 FACT_ROWS = ["Contract number", "Category", "Contract type", "Period of performance", "SEWP surcharge",
              "UEI", "CAGE code", "SEWP contract holder page"]
@@ -169,9 +173,9 @@ def main():
     def stext(i): return " ".join(text_outside_vars(sec[i]).split()) if i in sec else ""
 
     # 1. Variables: the book's ids, the home set present and hidden, nothing unknown, bracketed labels.
-    check("book-has-22-ids", len(BOOK_IDS) == 22 and len(HOME_IDS) == 4, failures)
+    check("book-has-22-ids", len(BOOK_IDS) == 22 and len(HOME_IDS) == 2, failures)
     missing = [i for i in HOME_IDS if i not in ids]
-    check("all-4-home-ids-present (missing: %s)" % ", ".join(missing), not missing, failures)
+    check("all-2-home-ids-present (missing: %s)" % ", ".join(missing), not missing, failures)
     unknown = sorted(ids - set(HOME_IDS))
     check("no-unknown-data-var-ids (%s)" % ", ".join(unknown), not unknown, failures)
     shown = [n.attrs["data-var"] for n in vars_ if "hidden" not in n.attrs]
@@ -189,7 +193,7 @@ def main():
     else:
         proot = parse(preview)
         pvars = find(proot, lambda n: "data-var" in n.attrs)
-        check("preview-has-all-4-home-ids", all(i in {n.attrs["data-var"] for n in pvars} for i in HOME_IDS), failures)
+        check("preview-has-all-2-home-ids", all(i in {n.attrs["data-var"] for n in pvars} for i in HOME_IDS), failures)
         still = [n.attrs["data-var"] for n in pvars if "hidden" in n.attrs]
         check("preview-no-variable-hidden (%s)" % ", ".join(still), not still, failures)
         check("preview-chip-style", all(s.lower() in preview.lower() for s in ("#EFE7FF", "#3B1D8F", "#C9B8F5")), failures)
@@ -264,8 +268,17 @@ def main():
 
     # 10. Ordering guide: the download slot and the support policy slot, hidden until the files exist.
     og = sec.get("ordering-guide")
-    check("ordering-guide-slots", og is not None and all(any(n.attrs.get("data-var") == v for n in og.walk())
-          for v in ("ordering_guide_pdf", "support_policy_text")), failures)
+    # AUDIT 11-04: replaces "ordering-guide-slots" (both slots hidden). Khai's email 11-04 supplied the PDF: the section must now
+    # link a .pdf that exists in the repo, with "PDF" in the link text; the support policy slot stays hidden; the old sentence is gone.
+    pdf_links = [n for n in (og.walk() if og is not None else []) if n.tag == "a" and n.attrs.get("href", "").lower().endswith(".pdf")]
+    repo_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    check("ordering-guide-pdf-link-live (a .pdf href to a file that exists, link text says PDF)",
+          len(pdf_links) >= 1 and all(os.path.isfile(os.path.join(repo_root, n.attrs["href"])) for n in pdf_links)
+          and all("PDF" in " ".join(n.all_text().split()) for n in pdf_links), failures)
+    check("ordering-guide-pdf-link-typed", all(n.attrs.get("type") == "application/pdf" for n in pdf_links) and bool(pdf_links), failures)
+    sp = [n for n in (og.walk() if og is not None else []) if n.attrs.get("data-var") == "support_policy_text"]
+    check("ordering-guide-support-policy-slot-still-hidden", len(sp) == 1 and "hidden" in sp[0].attrs, failures)
+    check("ordering-guide-posted-once-sentence-removed", "posted here once NASA activates the contract" not in re.sub(r"\s+", " ", html), failures)
     check("ordering-guide-nothing-visible-but-the-heading-and-one-line", og is not None and len(stext("ordering-guide")) < 220, failures)
 
     # 11. Vendors: the filled list, visible, names without brackets, no authorization claim.

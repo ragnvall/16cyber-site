@@ -5,8 +5,8 @@ variable: it sits in `index.html` with `data-var="<id>"` and the `hidden`
 attribute, so the live page leaves it out, and the preview
 (`tools/make-preview.py`) shows it as a purple [bracketed] chip. This is the
 full list, 22 in all, taken from the design book's "All variables" table, so
-Robert can ask Joel for them in one pass. The home page carries 4 of them as
-hidden slots; 7 are filled; the other 11 wait for pages not built yet.
+Robert can ask Joel for them in one pass. The home page carries 2 of them as
+hidden slots; 9 are filled; the other 11 wait for pages not built yet.
 
 "NASA holder rule" marks the ones NASA's SEWP VI holder requirements call
 for; "company" is a fact only 16 Cyber can state; "optional" can stay empty at
@@ -44,8 +44,8 @@ C the capability statement, U the about us page.
 | `capabilities_a1_a6` | Capabilities A.1 to A.6 (confirm) | Later: C | Yes or no on each: cybersecurity, cloud, systems integration, managed IT, hardware and software, training | company |
 | `past_performance` | Past performance | Later: C | Real orders only, with customer permission, once they exist | optional |
 | **Documents** | | | | |
-| `ordering_guide_pdf` | Ordering guide PDF | 5 | The PDF itself, or sign-off on its layout | NASA holder rule |
-| `guide_version_date` | Version date | 5 | Month year, printed on the ordering guide cover | company |
+| `ordering_guide_pdf` | Ordering guide PDF | 5 | FILLED: assets/16-Cyber-SEWP-VI-Ordering-Guide.pdf (source: Khai Huynh's email 11-04) | done |
+| `guide_version_date` | Version date | 5 | FILLED: the guide prints no version, so the page says "Posted November 4, 2026" (source: Khai Huynh's email 11-04) | done |
 | `support_policy_text` | Support policy text | 5 | Installation, warranty and support policy, a few paragraphs (the policy text SOW A.5.1(3b) asks every holder to post) | NASA holder rule |
 | `capability_statement_design` | Capability statement PDF design | Later: C | Designed PDF, or sign-off on its layout | optional |
 | **Copy** | | | | |
