@@ -27,12 +27,13 @@ ALWAYS_ON = set()
 # NASA shape (owner 10-13): the home page carries only what NASA's example page carries, plus the vendors.
 # Everything else stays in the book for the future pages (ordering guide, capability statement, about us).
 OFF_HOME = {"award_date", "naics_codes", "office_address", "small_business_status", "certifications", "jv_member_names",
-            "capabilities_a1_a6", "past_performance", "capability_statement_design", "about_us_text", "differentiators"}
+            "capabilities_a1_a6", "past_performance", "capability_statement_design", "about_us_text", "differentiators",
+            "guide_version_date"}  # AUDIT 11-04: off the home page, still owed (no printed version; owner shows no posting date)
 # Khai Huynh's email 10-13 (in writing): contract number, period of performance, surcharge, phone.
-# AUDIT 11-04: ordering_guide_pdf and guide_version_date are FILLED. Khai Huynh's email 11-04 sent the Ordering Guide PDF
-# (posted at assets/); the PDF prints no version string, so the version date slot is replaced by live "Posted November 4, 2026".
+# AUDIT 11-04: ordering_guide_pdf is FILLED (Khai Huynh's email 11-04 sent the PDF, posted at assets/). guide_version_date is NOT
+# filled: the PDF prints no version and the owner chose not to show a posting date, so it moves to OFF_HOME (waiting, not on the home page).
 FILLED = {"brands_confirmed", "pm_name", "dpm_name", "contract_number", "period_of_performance", "surcharge_pct", "sewp_phone_number",
-          "ordering_guide_pdf", "guide_version_date"}
+          "ordering_guide_pdf"}
 HOME_IDS = [i for i in BOOK_IDS if i not in OFF_HOME and i not in FILLED]
 FACT_ROWS = ["Contract number", "Category", "Contract type", "Period of performance", "SEWP surcharge",
              "UEI", "CAGE code", "SEWP contract holder page"]
